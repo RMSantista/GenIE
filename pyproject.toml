@@ -1,0 +1,55 @@
+[tool.poetry]
+name = "genie"
+version = "0.1.0"
+description = "Generic Extractor of Information Engine - LLM-powered data extraction framework"
+authors = ["Rodrigo <rodrigo@genie.dev>"]
+readme = "README.md"
+license = "MIT"
+
+[tool.poetry.dependencies]
+python = "^3.11"
+fastapi = "==0.110.0"
+uvicorn = {extras = ["standard"], version = "==0.27.0"}
+pydantic = "==2.6.0"
+pydantic-settings = "==2.2.0"
+anthropic = "==0.18.0"
+openai = "==1.12.0"
+python-multipart = "==0.0.9"
+PyPDF2 = "==3.0.0"
+cryptography = "==42.0.0"
+
+[tool.poetry.group.dev.dependencies]
+pytest = "==8.0.0"
+pytest-asyncio = "==0.23.0"
+pytest-cov = "==4.1.0"
+ruff = "==0.2.0"
+black = "==24.2.0"
+mypy = "==1.8.0"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.black]
+line-length = 88
+target-version = ["py311"]
+
+[tool.ruff]
+line-length = 88
+select = ["E", "F", "I", "N", "W"]
+
+[tool.ruff.per-file-ignores]
+"__init__.py" = ["F401"]
+
+[tool.mypy]
+python_version = "3.11"
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = false
+ignore_missing_imports = true
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["tests"]
+python_files = "test_*.py"
+python_functions = "test_*"
