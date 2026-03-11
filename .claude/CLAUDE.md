@@ -379,11 +379,12 @@ Based on the **Orchestrator Pattern** (Ronie Uliana, Jan 2026).
 
 ### Agents
 
-| Agent    | Role                              | Model  |
-|----------|-----------------------------------|--------|
-| **lamp** | Documentation & analysis          | haiku  |
-| **wish** | Python/FastAPI implementation      | sonnet |
-| **seal** | Code review & QA                  | sonnet |
+| Agent     | Role                              | Model  | Skill              |
+|-----------|-----------------------------------|--------|---------------------|
+| **lamp**  | Documentation & analysis          | haiku  | project-analysis    |
+| **wish**  | Python/FastAPI implementation      | sonnet | genie-dev           |
+| **seal**  | Code review                       | sonnet | code-review         |
+| **djinn** | QA testing & validation           | sonnet | quality-control     |
 
 ### Workflow Phases
 
