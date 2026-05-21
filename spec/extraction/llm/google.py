@@ -1,29 +1,31 @@
-"""OpenAI GPT LLM provider implementation."""
+"""Google Gemini LLM provider implementation."""
 
+import asyncio
 import json
 import logging
 from typing import Any, Dict
 
-from openai import AsyncOpenAI
+import google.generativeai as genai
 
 from spec.core.exceptions import LLMProviderError
 from spec.extraction.llm.base import BaseLLMProvider
 
 logger = logging.getLogger(__name__)
 
-_SYSTEM_MESSAGE = (
+_SYSTEM_INSTRUCTION = (
     "You are a specialized information extraction system. "
     "Return ONLY valid JSON, no explanations, no markdown, just raw JSON."
 )
 
 
-class OpenAIProvider(BaseLLMProvider):
-    """LLM provider for OpenAI's GPT models.
+class GoogleProvider(BaseLLMProvider):
+    """LLM provider for Google's Gemini models.
 
-    Uses the AsyncOpenAI client for non-blocking API calls.
+    Uses the google-generativeai SDK with a synchronous client wrapped
+    in an executor for async compatibility.
 
     Attributes:
-        client: AsyncOpenAI client instance
+        client: GenerativeModel instance
         max_tokens: Maximum tokens in response
         temperature: Sampling temperature
     """
@@ -31,15 +33,15 @@ class OpenAIProvider(BaseLLMProvider):
     def __init__(
         self,
         api_key: str,
-        model: str = "gpt-4o",
+        model: str = "gemini-1.5-pro",
         max_tokens: int = 4096,
         temperature: float = 0.0,
     ) -> None:
-        """Initialize OpenAI provider.
+        """Initialize Google Gemini provider.
 
         Args:
-            api_key: OpenAI API key
-            model: GPT model version
+            api_key: Google AI API key
+            model: Gemini model version
             max_tokens: Maximum tokens in response
             temperature: Sampling temperature (0.0-1.0)
 
@@ -48,12 +50,21 @@ class OpenAIProvider(BaseLLMProvider):
         """
 
         if not api_key:
-            raise LLMProviderError("OpenAI API key is required")
+            raise LLMProviderError("Google API key is required")
 
         super().__init__(api_key, model)
         self.max_tokens = max_tokens
         self.temperature = temperature
-        self.client = AsyncOpenAI(api_key=api_key)
+
+        genai.configure(api_key=api_key)
+        self.client = genai.GenerativeModel(
+            model_name=model,
+            system_instruction=_SYSTEM_INSTRUCTION,
+            generation_config=genai.types.GenerationConfig(
+                max_output_tokens=max_tokens,
+                temperature=temperature,
+            ),
+        )
 
     async def extract(
         self,
@@ -61,7 +72,7 @@ class OpenAIProvider(BaseLLMProvider):
         schema: Dict[str, Any],
         instructions: str = "",
     ) -> Dict[str, Any]:
-        """Extract data using GPT.
+        """Extract data using Gemini.
 
         Args:
             content: Text to analyze
@@ -78,29 +89,25 @@ class OpenAIProvider(BaseLLMProvider):
         try:
             prompt = self._build_prompt(content, schema, instructions)
 
-            logger.debug(f"Calling OpenAI API with model: {self.model}")
+            logger.debug(f"Calling Gemini API with model: {self.model}")
 
-            response = await self.client.chat.completions.create(
-                model=self.model,
-                max_tokens=self.max_tokens,
-                temperature=self.temperature,
-                messages=[
-                    {"role": "system", "content": _SYSTEM_MESSAGE},
-                    {"role": "user", "content": prompt},
-                ],
+            loop = asyncio.get_event_loop()
+            response = await loop.run_in_executor(
+                None,
+                lambda: self.client.generate_content(prompt),
             )
 
-            logger.debug("OpenAI API response received successfully")
+            logger.debug("Gemini API response received successfully")
 
             return self._parse_response(response)
 
         except json.JSONDecodeError as e:
-            raise LLMProviderError(f"Invalid JSON in OpenAI response: {e}")
+            raise LLMProviderError(f"Invalid JSON in Gemini response: {e}")
         except LLMProviderError:
             raise
         except Exception as e:
-            logger.error(f"OpenAI API error: {e}", exc_info=True)
-            raise LLMProviderError(f"OpenAI extraction failed: {e}")
+            logger.error(f"Gemini API error: {e}", exc_info=True)
+            raise LLMProviderError(f"Gemini extraction failed: {e}")
 
     def _build_prompt(
         self,
@@ -108,7 +115,7 @@ class OpenAIProvider(BaseLLMProvider):
         schema: Dict[str, Any],
         instructions: str = "",
     ) -> str:
-        """Build optimized prompt for GPT.
+        """Build optimized prompt for Gemini.
 
         Args:
             content: Text content
@@ -143,12 +150,12 @@ JSON OUTPUT:
 """
 
     def _parse_response(self, response: Any) -> Dict[str, Any]:
-        """Parse OpenAI response.
+        """Parse Gemini response.
 
         Handles markdown code blocks and extracts JSON.
 
         Args:
-            response: OpenAI API response object
+            response: Gemini API response object
 
         Returns:
             dict: Parsed JSON data
@@ -157,7 +164,7 @@ JSON OUTPUT:
             LLMProviderError: If JSON parsing fails
         """
 
-        text = response.choices[0].message.content.strip()
+        text = response.text.strip()
 
         if text.startswith("```json"):
             text = text[7:]
@@ -172,5 +179,5 @@ JSON OUTPUT:
         try:
             return json.loads(text)
         except json.JSONDecodeError as e:
-            logger.error(f"Failed to parse JSON from OpenAI: {text[:100]}...")
-            raise LLMProviderError(f"Invalid JSON response from OpenAI: {e}")
+            logger.error(f"Failed to parse JSON from Gemini: {text[:100]}...")
+            raise LLMProviderError(f"Invalid JSON response from Gemini: {e}")

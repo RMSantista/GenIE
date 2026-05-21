@@ -20,6 +20,9 @@ class Settings(BaseSettings):
         uploads_dir: Uploads directory path
         anthropic_api_key: Anthropic API key
         openai_api_key: OpenAI API key
+        google_api_key: Google AI API key
+        llm_provider: Active LLM provider name (default: "google")
+        llm_model: Active LLM model override (None = use provider default)
     """
 
     environment: str = "development"
@@ -35,6 +38,10 @@ class Settings(BaseSettings):
 
     anthropic_api_key: Optional[str] = None
     openai_api_key: Optional[str] = None
+    google_api_key: Optional[str] = None
+
+    llm_provider: str = "google"
+    llm_model: Optional[str] = None
 
     model_config = {"env_file": ".env", "env_file_encoding": "utf-8", "case_sensitive": False}
 
