@@ -1,11 +1,11 @@
 """Google Gemini LLM provider implementation."""
 
-import asyncio
 import json
 import logging
 from typing import Any, Dict
 
-import google.generativeai as genai
+from google import genai
+from google.genai import types
 
 from spec.core.exceptions import LLMProviderError
 from spec.extraction.llm.base import BaseLLMProvider
@@ -21,11 +21,10 @@ _SYSTEM_INSTRUCTION = (
 class GoogleProvider(BaseLLMProvider):
     """LLM provider for Google's Gemini models.
 
-    Uses the google-generativeai SDK with a synchronous client wrapped
-    in an executor for async compatibility.
+    Uses the google-genai SDK with native async support via client.aio.
 
     Attributes:
-        client: GenerativeModel instance
+        client: genai.Client instance
         max_tokens: Maximum tokens in response
         temperature: Sampling temperature
     """
@@ -55,15 +54,11 @@ class GoogleProvider(BaseLLMProvider):
         super().__init__(api_key, model)
         self.max_tokens = max_tokens
         self.temperature = temperature
-
-        genai.configure(api_key=api_key)
-        self.client = genai.GenerativeModel(
-            model_name=model,
+        self.client = genai.Client(api_key=api_key)
+        self._generate_config = types.GenerateContentConfig(
             system_instruction=_SYSTEM_INSTRUCTION,
-            generation_config=genai.types.GenerationConfig(
-                max_output_tokens=max_tokens,
-                temperature=temperature,
-            ),
+            temperature=temperature,
+            max_output_tokens=max_tokens,
         )
 
     async def extract(
@@ -91,10 +86,10 @@ class GoogleProvider(BaseLLMProvider):
 
             logger.debug(f"Calling Gemini API with model: {self.model}")
 
-            loop = asyncio.get_event_loop()
-            response = await loop.run_in_executor(
-                None,
-                lambda: self.client.generate_content(prompt),
+            response = await self.client.aio.models.generate_content(
+                model=self.model,
+                contents=prompt,
+                config=self._generate_config,
             )
 
             logger.debug("Gemini API response received successfully")

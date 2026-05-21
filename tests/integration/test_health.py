@@ -1,15 +1,22 @@
 """Tests for health check endpoint."""
 
 import pytest
-from fastapi.testclient import TestClient
+import httpx
 
 from spec.main import app
 
 
-def test_root_endpoint():
+@pytest.fixture
+async def client():
+    async with httpx.AsyncClient(
+        transport=httpx.ASGITransport(app=app), base_url="http://test"
+    ) as c:
+        yield c
+
+
+async def test_root_endpoint(client: httpx.AsyncClient):
     """Test root endpoint."""
-    client = TestClient(app)
-    response = client.get("/")
+    response = await client.get("/")
 
     assert response.status_code == 200
     data = response.json()
@@ -18,10 +25,9 @@ def test_root_endpoint():
     assert data["version"] == "0.1.0"
 
 
-def test_health_endpoint():
+async def test_health_endpoint(client: httpx.AsyncClient):
     """Test health check endpoint."""
-    client = TestClient(app)
-    response = client.get("/api/v1/health")
+    response = await client.get("/api/v1/health")
 
     assert response.status_code == 200
     data = response.json()
@@ -33,20 +39,17 @@ def test_health_endpoint():
     assert "environment" in data
 
 
-def test_health_endpoint_response_structure():
+async def test_health_endpoint_response_structure(client: httpx.AsyncClient):
     """Test health endpoint response has correct structure."""
-    client = TestClient(app)
-    response = client.get("/api/v1/health")
+    response = await client.get("/api/v1/health")
 
     assert response.status_code == 200
     data = response.json()
 
-    # Check all required fields
     required_fields = ["status", "version", "timestamp", "environment"]
     for field in required_fields:
         assert field in data, f"Missing field: {field}"
 
-    # Check field types
     assert isinstance(data["status"], str)
     assert isinstance(data["version"], str)
     assert isinstance(data["timestamp"], str)
