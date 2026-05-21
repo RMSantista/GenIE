@@ -7,6 +7,8 @@ into endpoint handlers using FastAPI's Depends() mechanism.
 from typing import Optional
 import logging
 
+from fastapi import Depends
+
 from spec.core.config import Settings, get_settings
 from spec.extraction.engine import ExtractionEngine
 from spec.extraction.llm.factory import LLMProviderFactory
@@ -35,35 +37,27 @@ def get_logger(name: str = __name__) -> logging.Logger:
     return logging.getLogger(name)
 
 
-def get_search_library(settings: Settings = None) -> JSONStorage:
+def get_search_library(settings: Settings = Depends(get_app_settings)) -> JSONStorage:
     """Get search library instance.
 
     Args:
-        settings: Application settings (optional)
+        settings: Application settings (injected)
 
     Returns:
         JSONStorage: Search library instance
-
-    Note:
-        In a production environment, this could implement caching
-        or use a singleton pattern for better performance.
     """
-    if settings is None:
-        settings = get_settings()
     return JSONStorage(storage_path=settings.search_library_path)
 
 
-def get_llm_factory(settings: Settings = None) -> LLMProviderFactory:
+def get_llm_factory(settings: Settings = Depends(get_app_settings)) -> LLMProviderFactory:
     """Get LLM provider factory.
 
     Args:
-        settings: Application settings (optional)
+        settings: Application settings (injected)
 
     Returns:
         LLMProviderFactory: Factory for creating LLM providers
     """
-    if settings is None:
-        settings = get_settings()
     return LLMProviderFactory(settings=settings)
 
 
@@ -77,32 +71,22 @@ def get_output_manager() -> OutputManager:
 
 
 def get_extraction_engine(
-    search_library: Optional[JSONStorage] = None,
-    llm_factory: Optional[LLMProviderFactory] = None,
-    output_manager: Optional[OutputManager] = None,
+    search_library: JSONStorage = Depends(get_search_library),
+    llm_factory: LLMProviderFactory = Depends(get_llm_factory),
+    output_manager: OutputManager = Depends(get_output_manager),
 ) -> ExtractionEngine:
     """Get extraction engine instance.
 
     This is the main orchestrator for extraction operations.
 
     Args:
-        search_library: Search library instance
-        llm_factory: LLM provider factory
-        output_manager: Output manager
+        search_library: Search library instance (injected)
+        llm_factory: LLM provider factory (injected)
+        output_manager: Output manager (injected)
 
     Returns:
         ExtractionEngine: Configured extraction engine
-
-    If any dependency is None, it will be created using its respective
-    factory function.
     """
-    if search_library is None:
-        search_library = get_search_library()
-    if llm_factory is None:
-        llm_factory = get_llm_factory()
-    if output_manager is None:
-        output_manager = get_output_manager()
-
     return ExtractionEngine(
         search_library=search_library,
         llm_factory=llm_factory,
