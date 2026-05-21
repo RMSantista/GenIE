@@ -67,40 +67,34 @@ class LayoutFingerprint:
 
         text = content
 
-        # Remove numbers (but keep structure markers like ":")
-        text = re.sub(r"\d+", "N", text)
-
-        # Remove dates (common patterns)
-        text = re.sub(
-            r"\d{1,2}/\d{1,2}/\d{2,4}", "D", text
-        )  # DD/MM/YYYY or MM/DD/YYYY
-        text = re.sub(r"\d{4}-\d{1,2}-\d{1,2}", "D", text)  # YYYY-MM-DD
-
-        # Remove email-like patterns
-        text = re.sub(r"[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+", "EMAIL", text)
-
-        # Normalize whitespace
-        text = re.sub(r"[ \t]+", " ", text)  # Multiple spaces to single space
+        # Normalize all whitespace: collapse tabs/spaces and newlines
+        text = re.sub(r"[ \t]+", " ", text)
+        text = re.sub(r"\n+", "\n", text)
 
         # Process per line to preserve line structure
         lines = text.split("\n")
         processed_lines = []
 
         for line in lines:
-            # Keep lines with colons (labels)
+            line = line.strip()
+            if not line:
+                continue
+
             if ":" in line:
-                # This is likely a label line, keep mostly as-is
-                processed_lines.append(line[:80])  # Cap line length
+                # Label line: keep the label part, normalize the value
+                label, _, _ = line.partition(":")
+                label = label.strip()
+                processed_lines.append(f"{label}:V")
             else:
-                # Remove proper nouns (capitalized words not at line start)
-                line = re.sub(r"(?<!\A)(?<!\n)\b[A-Z][a-z]+\b", "X", line)
-                if line.strip():  # Only add non-empty lines
-                    processed_lines.append(line[:80])
+                # Free text: remove numbers, dates, proper nouns
+                line = re.sub(r"\d{4}-\d{1,2}-\d{1,2}", "D", line)
+                line = re.sub(r"\d{1,2}/\d{1,2}/\d{2,4}", "D", line)
+                line = re.sub(r"\d+", "N", line)
+                line = re.sub(r"\b[A-Z][a-z]+\b", "X", line)
+                if line.strip():
+                    processed_lines.append(line.strip()[:80])
 
-        # Join with newlines and normalize
         result = "\n".join(processed_lines)
-        result = result.strip()
-
         return result
 
     def similarity(self, fp1: str, fp2: str) -> float:

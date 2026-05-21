@@ -2,6 +2,7 @@
 
 from typing import Optional
 from pathlib import Path
+from pydantic import model_validator
 from pydantic_settings import BaseSettings
 
 
@@ -35,12 +36,16 @@ class Settings(BaseSettings):
     anthropic_api_key: Optional[str] = None
     openai_api_key: Optional[str] = None
 
-    class Config:
-        """Pydantic settings configuration."""
+    model_config = {"env_file": ".env", "env_file_encoding": "utf-8", "case_sensitive": False}
 
-        env_file = ".env"
-        env_file_encoding = "utf-8"
-        case_sensitive = False
+    @model_validator(mode="after")
+    def create_directories(self) -> "Settings":
+        """Ensure required directories exist after initialization."""
+        Path(self.data_dir).mkdir(parents=True, exist_ok=True)
+        Path(self.config_dir).mkdir(parents=True, exist_ok=True)
+        Path(self.uploads_dir).mkdir(parents=True, exist_ok=True)
+        Path(self.search_library_path).parent.mkdir(parents=True, exist_ok=True)
+        return self
 
 
 # Global settings instance
@@ -51,17 +56,9 @@ def get_settings() -> Settings:
     """Get or create the global settings instance.
 
     Returns:
-        Settings: Global settings object
-
-    This function ensures a singleton pattern for settings across the application.
+        Settings: Global settings object (singleton)
     """
-
     global _settings
     if _settings is None:
         _settings = Settings()
-        # Ensure directories exist
-        Path(_settings.data_dir).mkdir(parents=True, exist_ok=True)
-        Path(_settings.config_dir).mkdir(parents=True, exist_ok=True)
-        Path(_settings.uploads_dir).mkdir(parents=True, exist_ok=True)
-        Path(_settings.search_library_path).parent.mkdir(parents=True, exist_ok=True)
     return _settings
