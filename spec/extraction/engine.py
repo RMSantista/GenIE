@@ -236,8 +236,7 @@ class ExtractionEngine:
         """
 
         try:
-            # Get LLM provider (use default for now)
-            llm_provider = self.llm_factory.get_provider()
+            llm_provider = self.llm_factory.get_default_provider()
 
             # Basic schema for Phase 1
             schema = {"fields": {}}
