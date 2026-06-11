@@ -1,17 +1,15 @@
 """Tests for Pydantic models."""
 
-import pytest
 from datetime import datetime
 
-from spec.models.extraction import ExtractionRequest, ExtractionResponse
+import pytest
+
 from spec.models.config import (
     InputConfig,
-    OutputConfig,
     LLMConfig,
-    BehaviorConfig,
-    ExtractionConfig,
 )
-from spec.models.library import PatternField, SearchPattern, LibraryMetadata
+from spec.models.extraction import ExtractionRequest, ExtractionResponse
+from spec.models.library import PatternField, SearchPattern
 from spec.models.output import FieldDefinition, OutputSchema
 
 

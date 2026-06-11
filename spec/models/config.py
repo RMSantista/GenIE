@@ -48,7 +48,7 @@ class LLMConfig(BaseModel):
     """
 
     provider: str = Field("anthropic", description="LLM provider")
-    model: str = Field("claude-sonnet-4-20250514", description="Model ID")
+    model: str = Field("claude-sonnet-4-6", description="Model ID")
     api_key_ref: Optional[str] = Field(None, description="API key reference")
     fallback_to_ocr: bool = Field(False, description="Fallback to OCR")
     temperature: float = Field(0.0, ge=0.0, le=1.0, description="Temperature")
@@ -111,7 +111,7 @@ class ExtractionConfig(BaseModel):
                 },
                 "llm": {
                     "provider": "anthropic",
-                    "model": "claude-sonnet-4-20250514",
+                    "model": "claude-sonnet-4-6",
                     "temperature": 0.0,
                     "max_tokens": 4096,
                 },

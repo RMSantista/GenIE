@@ -1,10 +1,10 @@
 """Tests for content parsers."""
 
-import pytest
-import asyncio
 from pathlib import Path
 
-from spec.core.exceptions import InvalidConfig, ExtractionFailed
+import pytest
+
+from spec.core.exceptions import InvalidConfig
 from spec.extraction.parsers.text import TextParser
 
 

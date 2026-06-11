@@ -2,9 +2,9 @@
 
 ## Living Document
 
-> **Status:** Pre-development (no code written yet)
+> **Status:** Phase 1 COMPLETE ✅ + Web App (3 agentes) entregue — ver Adendo 2026-06-11
 > **Created:** 2026-03-05
-> **Last Updated:** 2026-03-05
+> **Last Updated:** 2026-06-11
 >
 > **How to maintain:** Update checkboxes as items are completed. Add dates in `(YYYY-MM-DD)` after completed items. Add new items as requirements emerge. Never delete completed items — they serve as project history.
 
@@ -20,17 +20,17 @@
 
 #### Stage 1.1.1 — Repository & Tooling
 
-- [ ] `[S]` Initialize Git repository with `.gitignore` (Python, IDE, .env)
-- [ ] `[S]` Create `pyproject.toml` with Poetry (Python ^3.11)
-- [ ] `[S]` Add core dependencies: `fastapi`, `uvicorn`, `pydantic`, `pydantic-settings`, `anthropic`
-- [ ] `[S]` Add dev dependencies: `pytest`, `pytest-asyncio`, `pytest-cov`, `ruff`, `mypy`, `black`
-- [ ] `[S]` Create `.env.example` with all required environment variables
-- [ ] `[S]` Create `config/development.yaml` with default settings
-- [ ] `[S]` Setup `ruff` and `mypy` configuration in `pyproject.toml`
+- [x] `[S]` Initialize Git repository with `.gitignore` (Python, IDE, .env) ✅ (2026-06-11)
+- [x] `[S]` Create `pyproject.toml` with Poetry (Python ^3.11) ✅ (2026-06-11)
+- [x] `[S]` Add core dependencies: `fastapi`, `uvicorn`, `pydantic`, `pydantic-settings`, `anthropic` ✅ (2026-06-11)
+- [x] `[S]` Add dev dependencies: `pytest`, `pytest-asyncio`, `pytest-cov`, `ruff`, `mypy`, `black` ✅ (2026-06-11)
+- [x] `[S]` Create `.env.example` with all required environment variables ✅ (2026-06-11)
+- [x] `[S]` Create `config/development.yaml` with default settings ✅ (2026-06-11)
+- [x] `[S]` Setup `ruff` and `mypy` configuration in `pyproject.toml` ✅ (2026-06-11)
 
 #### Stage 1.1.2 — Folder Structure
 
-- [ ] `[M]` Create full package structure under `genie/`:
+- [x] `[M]` Create full package structure under `genie/`: ✅ (2026-06-11)
   - `api/v1/endpoints/`, `api/v1/dependencies.py`
   - `core/` (`config.py`, `exceptions.py`, `security.py`, `logging_config.py`)
   - `models/` (`extraction.py`, `config.py`, `library.py`, `output.py`)
@@ -38,22 +38,22 @@
   - `search_library/` (`base.py`, `json_storage.py`)
   - `output/` (`manager.py`, `adapters/`, `schema_adapter.py`)
   - `mcp/`, `utils/`
-- [ ] `[S]` Create `__init__.py` files for all packages
-- [ ] `[S]` Create `tests/` structure: `unit/`, `integration/`, `fixtures/`
-- [ ] `[S]` Create `data/search_library/` and `data/uploads/` with `.gitkeep`
-- [ ] `[S]` Create `scripts/` directory with `setup.sh` placeholder
+- [x] `[S]` Create `__init__.py` files for all packages ✅ (2026-06-11)
+- [x] `[S]` Create `tests/` structure: `unit/`, `integration/`, `fixtures/` ✅ (2026-06-11)
+- [x] `[S]` Create `data/search_library/` and `data/uploads/` with `.gitkeep` ✅ (2026-06-11)
+- [x] `[S]` Create `scripts/` directory with `setup.sh` placeholder ✅ (2026-06-11)
 
 #### Stage 1.1.3 — Core Infrastructure
 
-- [ ] `[M]` Implement `genie/core/config.py` — Pydantic Settings model (env vars, paths, API config)
-- [ ] `[M]` Implement `genie/core/exceptions.py` — `GenieException` hierarchy:
+- [x] `[M]` Implement `genie/core/config.py` — Pydantic Settings model (env vars, paths, API config) ✅ (2026-06-11)
+- [x] `[M]` Implement `genie/core/exceptions.py` — `GenieException` hierarchy: ✅ (2026-06-11)
   - `LayoutNotRecognized`, `ExtractionFailed`, `LLMProviderError`, `InvalidConfig`, `StorageError`
-- [ ] `[M]` Implement `genie/core/logging_config.py` — structured logging setup (console + file handlers)
-- [ ] `[S]` Implement `genie/core/security.py` — `SecureKeyStore` with Fernet encryption (placeholder)
-- [ ] `[M]` Implement `genie/main.py` — FastAPI app creation, CORS, lifespan events
-- [ ] `[S]` Implement `genie/api/v1/endpoints/health.py` — `GET /health` endpoint
-- [ ] `[S]` Write test: `tests/unit/test_config.py` — validate settings loading
-- [ ] `[S]` Write test: `tests/integration/test_health.py` — health endpoint responds 200
+- [x] `[M]` Implement `genie/core/logging_config.py` — structured logging setup (console + file handlers) ✅ (2026-06-11)
+- [x] `[S]` Implement `genie/core/security.py` — `SecureKeyStore` with Fernet encryption (placeholder) ✅ (2026-06-11)
+- [x] `[M]` Implement `genie/main.py` — FastAPI app creation, CORS, lifespan events ✅ (2026-06-11)
+- [x] `[S]` Implement `genie/api/v1/endpoints/health.py` — `GET /health` endpoint ✅ (2026-06-11)
+- [x] `[S]` Write test: `tests/unit/test_config.py` — validate settings loading ✅ (2026-06-11)
+- [x] `[S]` Write test: `tests/integration/test_health.py` — health endpoint responds 200 ✅ (2026-06-11)
 
 > **Quality Gate 1.1:** Server starts with `uvicorn genie.main:app --reload`, health endpoint returns `{"status": "healthy"}`, all tests pass.
 
@@ -65,44 +65,44 @@
 
 #### Stage 1.2.1 — Pydantic Models
 
-- [ ] `[M]` Implement `genie/models/extraction.py`:
+- [x] `[M]` Implement `genie/models/extraction.py`: ✅ (2026-06-11)
   - `ExtractionRequest` (config_id, source, force_llm, options)
   - `ExtractionResponse` (extraction_id, status, method_used, data, confidence, processing_time_ms, layout_fingerprint)
-- [ ] `[M]` Implement `genie/models/config.py`:
+- [x] `[M]` Implement `genie/models/config.py`: ✅ (2026-06-11)
   - `ExtractionConfig` (extraction_id, input, output, llm, behavior)
   - `InputConfig`, `OutputConfig`, `LLMConfig`, `BehaviorConfig`
-- [ ] `[S]` Implement `genie/models/library.py`:
+- [x] `[S]` Implement `genie/models/library.py`: ✅ (2026-06-11)
   - `SearchPattern`, `PatternField`, `LibraryMetadata`
-- [ ] `[S]` Implement `genie/models/output.py`:
+- [x] `[S]` Implement `genie/models/output.py`: ✅ (2026-06-11)
   - `OutputSchema`, `FieldDefinition`
-- [ ] `[S]` Write tests: `tests/unit/test_models.py` — validation for all models
+- [x] `[S]` Write tests: `tests/unit/test_models.py` — validation for all models ✅ (2026-06-11)
 
 #### Stage 1.2.2 — LLM Provider Interface & Anthropic
 
-- [ ] `[M]` Implement `genie/extraction/llm/base.py`:
+- [x] `[M]` Implement `genie/extraction/llm/base.py`: ✅ (2026-06-11)
   - `BaseLLMProvider` ABC with `extract()`, `_build_prompt()`, `_parse_response()`
-- [ ] `[L]` Implement `genie/extraction/llm/anthropic.py`:
+- [x] `[L]` Implement `genie/extraction/llm/anthropic.py`: ✅ (2026-06-11)
   - `AnthropicProvider` with async Claude API calls
   - Prompt engineering for structured extraction
   - JSON response parsing with markdown cleanup
-- [ ] `[M]` Implement `genie/extraction/llm/factory.py`:
+- [x] `[M]` Implement `genie/extraction/llm/factory.py`: ✅ (2026-06-11)
   - `LLMProviderFactory` — creates provider instances by name
-- [ ] `[M]` Write tests: `tests/unit/test_llm_providers.py` — mock API calls, validate prompt building and response parsing
-- [ ] `[S]` Create `scripts/test_llm_connection.py` — manual LLM connectivity test
+- [x] `[M]` Write tests: `tests/unit/test_llm_providers.py` — mock API calls, validate prompt building and response parsing ✅ (2026-06-11)
+- [x] `[S]` Create `scripts/test_llm_connection.py` — manual LLM connectivity test ✅ (2026-06-11)
 
 #### Stage 1.2.3 — Text Parser & Basic Extraction
 
-- [ ] `[M]` Implement `genie/extraction/parsers/text.py`:
+- [x] `[M]` Implement `genie/extraction/parsers/text.py`: ✅ (2026-06-11)
   - `TextParser` — plain text content reading
-- [ ] `[S]` Implement `genie/extraction/engine.py` — initial `ExtractionEngine` skeleton:
+- [x] `[S]` Implement `genie/extraction/engine.py` — initial `ExtractionEngine` skeleton: ✅ (2026-06-11)
   - `extract()` method with LLM-only flow (no Search Library yet)
   - `_read_content()` dispatching to parsers
-- [ ] `[M]` Implement `genie/api/v1/endpoints/extract.py`:
+- [x] `[M]` Implement `genie/api/v1/endpoints/extract.py`: ✅ (2026-06-11)
   - `POST /api/v1/extract` — accepts text source, returns extracted data
-- [ ] `[M]` Implement `genie/api/v1/dependencies.py`:
+- [x] `[M]` Implement `genie/api/v1/dependencies.py`: ✅ (2026-06-11)
   - Dependency injection for `ExtractionEngine`, `LLMProviderFactory`
-- [ ] `[M]` Write tests: `tests/integration/test_api.py` — extract endpoint with text input
-- [ ] `[S]` Write tests: `tests/unit/test_parsers.py` — text parser
+- [x] `[M]` Write tests: `tests/integration/test_api.py` — extract endpoint with text input ✅ (2026-06-11)
+- [x] `[S]` Write tests: `tests/unit/test_parsers.py` — text parser ✅ (2026-06-11)
 
 > **Quality Gate 1.2:** `POST /api/v1/extract` with text source returns structured JSON via LLM. All unit and integration tests pass.
 
@@ -114,23 +114,23 @@
 
 #### Stage 1.3.1 — PDF Parser
 
-- [ ] `[S]` Add dependency: `PyPDF2`
-- [ ] `[M]` Implement `genie/extraction/parsers/pdf.py`:
+- [x] `[S]` Add dependency: `PyPDF2` ✅ (2026-06-11)
+- [x] `[M]` Implement `genie/extraction/parsers/pdf.py`: ✅ (2026-06-11)
   - `PDFParser` — text extraction from native PDFs (page-by-page)
   - Scanned PDF detection (fallback flag for OCR)
-- [ ] `[S]` Update `ExtractionEngine._read_content()` to dispatch PDF sources to `PDFParser`
-- [ ] `[S]` Update `POST /api/v1/extract` to accept `"type": "file"` sources with path
+- [x] `[S]` Update `ExtractionEngine._read_content()` to dispatch PDF sources to `PDFParser` ✅ (2026-06-11)
+- [x] `[S]` Update `POST /api/v1/extract` to accept `"type": "file"` sources with path ✅ (2026-06-11)
 - [ ] `[S]` Add sample PDFs to `tests/fixtures/sample_pdfs/`
-- [ ] `[M]` Write tests: `tests/unit/test_parsers.py` — PDF text extraction
+- [x] `[M]` Write tests: `tests/unit/test_parsers.py` — PDF text extraction ✅ (2026-06-11)
 
 #### Stage 1.3.2 — Layout Fingerprint Algorithm
 
-- [ ] `[L]` Implement `genie/extraction/layout/fingerprint.py`:
+- [x] `[L]` Implement `genie/extraction/layout/fingerprint.py`: ✅ (2026-06-11)
   - `LayoutFingerprint.generate()` — structure extraction (remove variable data, keep labels/formatting)
   - `LayoutFingerprint.similarity()` — fingerprint comparison (Hamming distance)
   - Configurable sensitivity levels (low/medium/high)
-- [ ] `[M]` Integrate fingerprinting into `ExtractionEngine.extract()` — generate fingerprint on every extraction
-- [ ] `[M]` Write tests: `tests/unit/test_fingerprint.py`:
+- [x] `[M]` Integrate fingerprinting into `ExtractionEngine.extract()` — generate fingerprint on every extraction ✅ (2026-06-11)
+- [x] `[M]` Write tests: `tests/unit/test_fingerprint.py`: ✅ (2026-06-11)
   - Same layout with different data produces same fingerprint
   - Different layouts produce different fingerprints
   - Similarity scoring works correctly
@@ -145,28 +145,28 @@
 
 #### Stage 1.4.1 — JSON Storage Implementation
 
-- [ ] `[M]` Implement `genie/search_library/base.py`:
+- [x] `[M]` Implement `genie/search_library/base.py`: ✅ (2026-06-11)
   - `BaseStorage` ABC with `find_pattern()`, `save_pattern()`, `update_success_rate()`, `list_patterns()`
-- [ ] `[L]` Implement `genie/search_library/json_storage.py`:
+- [x] `[L]` Implement `genie/search_library/json_storage.py`: ✅ (2026-06-11)
   - `JSONStorage` implementing `BaseStorage`
   - File-based CRUD with in-memory cache
   - Thread-safe read/write operations
   - Pattern matching by fingerprint + config_id
   - Success rate tracking (moving average)
-- [ ] `[M]` Implement `genie/search_library/matcher.py`:
+- [x] `[M]` Implement `genie/search_library/matcher.py`: ✅ (2026-06-11)
   - `PatternMatcher` — execute REGEX patterns against content
   - Validation of extracted data against pattern rules
-- [ ] `[M]` Write tests: `tests/unit/test_search_library.py` — CRUD, pattern lookup, success rate
+- [x] `[M]` Write tests: `tests/unit/test_search_library.py` — CRUD, pattern lookup, success rate ✅ (2026-06-11)
 
 #### Stage 1.4.2 — ExtractionEngine Full Flow
 
-- [ ] `[L]` Complete `genie/extraction/engine.py`:
+- [x] `[L]` Complete `genie/extraction/engine.py`: ✅ (2026-06-11)
   - Full extraction flow: fingerprint → library lookup → LLM fallback → save pattern
   - Confidence calculation based on extraction method
   - `force_llm` option support
   - Pattern auto-save after successful LLM extraction
-- [ ] `[M]` Update `genie/api/v1/dependencies.py` — inject `SearchLibrary` into engine
-- [ ] `[M]` Write tests: `tests/unit/test_extraction_engine.py`:
+- [x] `[M]` Update `genie/api/v1/dependencies.py` — inject `SearchLibrary` into engine ✅ (2026-06-11)
+- [x] `[M]` Write tests: `tests/unit/test_extraction_engine.py`: ✅ (2026-06-11)
   - Library hit path (pattern found)
   - Library miss path (LLM fallback)
   - Pattern saved after LLM extraction
@@ -174,25 +174,25 @@
 
 #### Stage 1.4.3 — REST API Completion
 
-- [ ] `[M]` Implement `genie/api/v1/endpoints/config.py`:
+- [x] `[M]` Implement `genie/api/v1/endpoints/config.py`: ✅ (2026-06-11)
   - `POST /api/v1/configs` — create extraction configuration
   - `GET /api/v1/configs/{config_id}` — retrieve configuration
   - `PUT /api/v1/configs/{config_id}` — update configuration
   - `DELETE /api/v1/configs/{config_id}` — delete configuration
-- [ ] `[M]` Implement `genie/api/v1/endpoints/library.py`:
+- [x] `[M]` Implement `genie/api/v1/endpoints/library.py`: ✅ (2026-06-11)
   - `GET /api/v1/library/patterns` — list all patterns
   - `GET /api/v1/library/patterns/{layout_id}` — get pattern details
   - `GET /api/v1/library/stats` — library statistics
-- [ ] `[S]` Implement API router aggregation in `genie/api/v1/router.py`
-- [ ] `[M]` Write tests: `tests/integration/test_api.py` — config CRUD, library endpoints
+- [x] `[S]` Implement API router aggregation in `genie/api/v1/router.py` ✅ (2026-06-11)
+- [x] `[M]` Write tests: `tests/integration/test_api.py` — config CRUD, library endpoints ✅ (2026-06-11)
 
 #### Stage 1.4.4 — End-to-End Validation
 
-- [ ] `[L]` Write `tests/integration/test_end_to_end.py`:
+- [x] `[L]` Write `tests/integration/test_end_to_end.py`: ✅ (2026-06-11)
   - Full flow: create config → extract from text → verify pattern saved → re-extract same layout → verify library hit
   - Full flow: extract from PDF → verify fingerprint → verify pattern storage
 - [ ] `[M]` Manual validation: extract from 3+ different document layouts, verify Search Library grows
-- [ ] `[S]` Run full test suite, verify 80%+ coverage
+- [x] `[S]` Run full test suite, verify 80%+ coverage ✅ (2026-06-11)
 
 > **Quality Gate 1.4:** Complete extraction flow works (library lookup → LLM fallback → pattern save). Config CRUD and Library endpoints work. End-to-end test passes. Test coverage >= 80%.
 
@@ -320,7 +320,7 @@
 
 #### Stage 3.2.1 — XLSX & CSV Parsers
 
-- [ ] `[S]` Add dependency: `openpyxl`
+- [x] `[S]` Add dependency: `openpyxl` ✅ (2026-06-11)
 - [ ] `[M]` Implement `genie/extraction/parsers/spreadsheet.py`:
   - `SpreadsheetParser` — XLSX and CSV reading
   - Sheet selection, header detection, data type inference
@@ -420,14 +420,14 @@
 
 - [ ] `[M]` Generate `docs/api/openapi.yaml` from FastAPI auto-docs
 - [ ] `[M]` Add detailed endpoint descriptions, examples, and error responses
-- [ ] `[S]` Verify Swagger UI works at `/docs`
+- [x] `[S]` Verify Swagger UI works at `/docs` ✅ (2026-06-11)
 
 #### Stage 4.2.2 — TabEx Integration
 
 - [ ] `[L]` Create TabEx integration example using JS SDK
-- [ ] `[M]` Implement `genie/api/v1/endpoints/extract.py` — file upload support (multipart)
+- [x] `[M]` File upload support (multipart) — entregue como `POST /api/v1/uploads` ✅ (2026-06-11)
 - [ ] `[M]` Validate: TabEx JS app extracts medical reports via GENIE API
-- [ ] `[S]` Document integration guide at `docs/examples/tabex_integration.md`
+- [x] `[S]` Document integration guide — entregue em `docs/MANUAL.md` (seção 4, TabEx) ✅ (2026-06-11)
 
 #### Stage 4.2.3 — Load Testing
 
@@ -453,9 +453,9 @@
 - [ ] `[M]` Implement `genie/api/middleware/auth.py`:
   - API key validation middleware
   - Key generation and rotation
-- [ ] `[M]` Complete `genie/core/security.py`:
-  - `SecureKeyStore` — encrypted API key storage (Fernet)
-  - `SecureFileAccess` — sandboxed file reading (allowed paths)
+- [x] `[M]` Complete `genie/core/security.py`: ✅ (2026-06-11)
+  - `KeyVault` — encrypted API key storage (AES-256-GCM; substitui o plano original com Fernet)
+  - Sandboxed file reading via `ensure_path_allowed()` (allowlist de raízes)
 - [ ] `[S]` Write tests: auth middleware, key management
 
 #### Stage 5.1.2 — Authorization & Rate Limiting
@@ -528,7 +528,7 @@
 
 #### Stage 5.3.3 — Documentation Completion
 
-- [ ] `[M]` Create `README.md` — project overview, quickstart, architecture diagram
+- [x] `[M]` Create `README.md` — project overview, quickstart, architecture diagram ✅ (2026-06-11)
 - [ ] `[M]` Create `docs/guides/quickstart.md` — step-by-step setup guide
 - [ ] `[M]` Create `docs/guides/configuration.md` — complete configuration reference
 - [ ] `[M]` Create `docs/guides/deployment.md` — production deployment guide
@@ -564,6 +564,29 @@ The **GenIE 10 Code Standards** must be verified at every Phase completion:
 | 2 | GENIE Templates (Search Library) | Open Source | Pattern auto-creation works |
 | 3 | GENIE Schema Manager | Commercial | Auto-adaptation production-ready |
 | 4 | Integrations (TabEx Pro) | Product | SDKs and TabEx integration |
+
+---
+
+## Adendo — 2026-06-11: Aplicação Web GenIE (handoff de design)
+
+Itens entregues a partir do handoff de design (claude.ai/design), fora do roadmap
+original mas alinhados às decisões de projeto 1, 2 e 5:
+
+- [x] SPA estática (`spec/web/`) servida pelo FastAPI — porte fiel do protótipo ✅ (2026-06-11)
+- [x] Pipeline de 3 agentes: Conector (I/O), Localizador (extração LLM), Organizador (formato) — `spec/extraction/agents/` ✅ (2026-06-11)
+- [x] Conectores de entrada: URL, pasta local, banco (SQLite/SQLAlchemy), API REST, upload, texto inline ✅ (2026-06-11)
+- [x] Destinos de saída: webhook, pasta, SQLite, API REST (TabEx), download assinado ✅ (2026-06-11)
+- [x] Cofre cifrado de API keys (AES-256-GCM) + endpoints `/api/v1/keys` ✅ (2026-06-11)
+- [x] Execuções com streaming SSE (`/api/v1/runs/{id}/events`), cancelamento e replay ✅ (2026-06-11)
+- [x] Multi-provider operacional: Google Gemini, OpenAI, Anthropic (modo JSON nativo) ✅ (2026-06-11)
+- [x] Manual de uso completo (`docs/MANUAL.md`): standalone + plugin + integração TabEx ✅ (2026-06-11)
+- [x] Suíte com 127 testes, cobertura 81% (meta: 80%) ✅ (2026-06-11)
+
+Reestruturações aplicadas:
+- `spec/api/v1/routes/` e `spec/output/formatters/` (vazios, fora do plano) removidos
+- `setup.sh` e `test-genie.py` movidos para `scripts/`; criado `scripts/test_llm_connection.py`
+- Documentos de status da raiz movidos para `docs/history/`
+- `data/` integralmente fora do versionamento (chave-mestre e segredos)
 
 ---
 

@@ -1,13 +1,12 @@
 """Tests for custom exceptions."""
 
-import pytest
 
 from spec.core.exceptions import (
-    GenieException,
-    LayoutNotRecognized,
     ExtractionFailed,
-    LLMProviderError,
+    GenieException,
     InvalidConfig,
+    LayoutNotRecognized,
+    LLMProviderError,
     StorageError,
 )
 

@@ -1,7 +1,7 @@
 """Tests for health check endpoint."""
 
-import pytest
 import httpx
+import pytest
 
 from spec.main import app
 

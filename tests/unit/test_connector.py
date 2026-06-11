@@ -148,3 +148,168 @@ class TestDownloadDelivery:
         assert sorted(receipt["artifacts"]) == ["output.csv", "output.json"]
         saved = json.loads((tmp_path / "genie-abc" / "output.json").read_text())
         assert saved == records
+
+
+class TestSqliteInput:
+    @pytest.mark.asyncio
+    async def test_reads_tables_as_items(self, tmp_path, monkeypatch) -> None:
+        from spec.core.config import get_settings
+
+        monkeypatch.setattr(get_settings(), "allowed_fs_roots", str(tmp_path))
+        db_file = tmp_path / "origem.db"
+        conn = sqlite3.connect(db_file)
+        conn.execute("CREATE TABLE exames (nome TEXT, valor TEXT)")
+        conn.execute("INSERT INTO exames VALUES ('Glicose', '118')")
+        conn.commit()
+        conn.close()
+
+        connector = ConnectorAgent()
+        items = await connector.open_input(
+            InputSpec(type="db", target=f"sqlite:///{db_file}"), noop_emit
+        )
+
+        assert len(items) == 1
+        assert "Glicose" in items[0]["content"]
+
+    @pytest.mark.asyncio
+    async def test_custom_query(self, tmp_path, monkeypatch) -> None:
+        from spec.core.config import get_settings
+
+        monkeypatch.setattr(get_settings(), "allowed_fs_roots", str(tmp_path))
+        db_file = tmp_path / "origem.db"
+        conn = sqlite3.connect(db_file)
+        conn.execute("CREATE TABLE t (a INT)")
+        conn.executemany("INSERT INTO t VALUES (?)", [(1,), (2,)])
+        conn.commit()
+        conn.close()
+
+        connector = ConnectorAgent()
+        items = await connector.open_input(
+            InputSpec(type="db", target=str(db_file), query="SELECT a FROM t WHERE a > 1"),
+            noop_emit,
+        )
+
+        assert len(items) == 1
+        assert '"a": 2' in items[0]["content"]
+
+    @pytest.mark.asyncio
+    async def test_missing_db_rejected(self, tmp_path, monkeypatch) -> None:
+        from spec.core.config import get_settings
+
+        monkeypatch.setattr(get_settings(), "allowed_fs_roots", str(tmp_path))
+        connector = ConnectorAgent()
+
+        with pytest.raises(InvalidConfig):
+            await connector.open_input(
+                InputSpec(type="db", target=str(tmp_path / "nao_existe.db")), noop_emit
+            )
+
+
+class TestTextInput:
+    @pytest.mark.asyncio
+    async def test_inline_text_item(self) -> None:
+        connector = ConnectorAgent()
+        items = await connector.open_input(
+            InputSpec(type="text", content="Glicose: 118", name="ocr.txt"), noop_emit
+        )
+
+        assert items == [{"id": "text-1", "name": "ocr.txt", "content": "Glicose: 118"}]
+
+    @pytest.mark.asyncio
+    async def test_blank_content_rejected(self) -> None:
+        connector = ConnectorAgent()
+
+        with pytest.raises(InvalidConfig):
+            await connector.open_input(InputSpec(type="text", content="  "), noop_emit)
+
+
+class TestHttpDelivery:
+    class _FakeResponse:
+        def __init__(self, status_code: int = 200) -> None:
+            self.status_code = status_code
+
+    class _FakeClient:
+        def __init__(self, *args, **kwargs) -> None:
+            self.calls = []
+
+        async def __aenter__(self):
+            return self
+
+        async def __aexit__(self, *args):
+            return False
+
+        async def request(self, method, url, json=None, headers=None):
+            TestHttpDelivery.last_call = {
+                "method": method, "url": url, "json": json, "headers": headers,
+            }
+            return TestHttpDelivery._FakeResponse(TestHttpDelivery.status)
+
+    status = 200
+    last_call: dict = {}
+
+    @pytest.mark.asyncio
+    async def test_batch_post_with_bearer(self, monkeypatch) -> None:
+        import spec.extraction.agents.connector as connector_module
+
+        monkeypatch.setattr(connector_module.httpx, "AsyncClient", self._FakeClient)
+        TestHttpDelivery.status = 200
+
+        connector = ConnectorAgent()
+        receipt = await connector.deliver(
+            OutputSpec(type="api", target="https://tabex.test/v2/exames", token="TBX_1"),
+            [{"exame": "Glicose"}],
+            {},
+            "genie-test",
+            noop_emit,
+        )
+
+        assert receipt == {"mode": "api", "calls": 1, "status": [200]}
+        assert TestHttpDelivery.last_call["headers"]["Authorization"] == "Bearer TBX_1"
+        assert TestHttpDelivery.last_call["json"] == [{"exame": "Glicose"}]
+
+    @pytest.mark.asyncio
+    async def test_error_status_raises(self, monkeypatch) -> None:
+        import spec.extraction.agents.connector as connector_module
+
+        monkeypatch.setattr(connector_module.httpx, "AsyncClient", self._FakeClient)
+        TestHttpDelivery.status = 500
+
+        connector = ConnectorAgent()
+        with pytest.raises(ExtractionFailed):
+            await connector.deliver(
+                OutputSpec(type="url", target="https://hooks.test/x"),
+                [{"a": 1}],
+                {},
+                "genie-test",
+                noop_emit,
+            )
+
+    @pytest.mark.asyncio
+    async def test_invalid_scheme_rejected(self) -> None:
+        connector = ConnectorAgent()
+        with pytest.raises(InvalidConfig):
+            await connector.deliver(
+                OutputSpec(type="api", target="ftp://x"), [{}], {}, "j", noop_emit
+            )
+
+
+class TestXlsxParsing:
+    def test_xlsx_roundtrip(self) -> None:
+        import io
+
+        from openpyxl import Workbook
+
+        from spec.extraction.parsers.content import xlsx_bytes_to_text
+
+        workbook = Workbook()
+        sheet = workbook.active
+        sheet.title = "Exames"
+        sheet.append(["exame", "resultado"])
+        sheet.append(["Glicose", 118])
+        buffer = io.BytesIO()
+        workbook.save(buffer)
+
+        text = xlsx_bytes_to_text(buffer.getvalue())
+
+        assert "# Planilha: Exames" in text
+        assert "Glicose\t118" in text

@@ -245,3 +245,27 @@ Quando aprovado, começaremos com **Stage 1.1.1** criando:
 4. Código em `spec/` (novos arquivos)
 
 Nenhum arquivo existente será sobrescrito.
+
+
+---
+
+# Atualização do Audit — 2026-06-11
+
+O cenário "zero código implementado" acima é histórico. Status atual:
+
+- ✅ **Fase 1 (MVP Core): concluída** — config/exceptions/logging/security, modelos
+  Pydantic, providers LLM (Google/OpenAI/Anthropic), parsers (texto/PDF/CSV/XLSX/HTML/JSON),
+  fingerprint, Search Library (JSON) + matcher, ExtractionEngine com fluxo completo
+  (config → fingerprint → library → LLM → pattern), endpoints `/extract`, `/configs` (CRUD),
+  `/library` (patterns/stats), `/providers`, `/health`.
+- ✅ **Aplicação web (handoff de design)** — SPA em `spec/web/` + pipeline de 3 agentes
+  (Conector/Localizador/Organizador) em `spec/extraction/agents/`, com `/models`, `/keys`
+  (cofre AES-256-GCM), `/uploads`, `/runs` (SSE) e `/downloads` (links assinados).
+- ✅ **Testes:** 127 passando · cobertura 81% (meta ≥80%).
+- ✅ **Docs:** `README.md`, `docs/MANUAL.md` (standalone + plugin + TabEx).
+- 📁 **Reestruturação:** `routes/` e `output/formatters/` removidos; scripts em `scripts/`;
+  docs de status da raiz em `docs/history/`; `data/` fora do versionamento.
+- ⏭️ **Próximos (Fase 2):** geração automática de REGEX (PatternGenerator), fingerprint
+  avançado, SQLite storage para a Search Library, correção manual de padrões via API.
+
+Rastreamento item a item: `docs/guides/GENIE-TODO.md` (checkboxes atualizados).

@@ -3,13 +3,15 @@
 import logging
 import uuid
 from time import time
-from typing import Any, Dict
+from typing import Any, Dict, Optional
 
+from spec.core.config_store import ConfigStore
 from spec.core.exceptions import ExtractionFailed, InvalidConfig
 from spec.extraction.layout.fingerprint import LayoutFingerprint
 from spec.extraction.llm.factory import LLMProviderFactory
 from spec.extraction.parsers.pdf import PDFParser
 from spec.extraction.parsers.text import TextParser
+from spec.models.config import ExtractionConfig
 from spec.models.extraction import ExtractionRequest, ExtractionResponse
 from spec.output.manager import OutputManager
 from spec.search_library.base import BaseStorage
@@ -41,6 +43,7 @@ class ExtractionEngine:
         search_library: BaseStorage,
         llm_factory: LLMProviderFactory,
         output_manager: OutputManager,
+        config_store: Optional[ConfigStore] = None,
     ) -> None:
         """Initialize extraction engine.
 
@@ -48,11 +51,13 @@ class ExtractionEngine:
             search_library: Search library storage instance
             llm_factory: LLM provider factory
             output_manager: Output manager instance
+            config_store: Store of extraction configurations (optional)
         """
 
         self.search_library = search_library
         self.llm_factory = llm_factory
         self.output_manager = output_manager
+        self.config_store = config_store
         self.fingerprint_generator = LayoutFingerprint()
 
         logger.debug("Initialized ExtractionEngine")
@@ -78,6 +83,9 @@ class ExtractionEngine:
                 f"Starting extraction {extraction_id} with config {request.config_id}"
             )
 
+            # 0. Load stored configuration (decision nº 1: generic, not general)
+            config = self._load_config(request.config_id)
+
             # 1. Read content
             logger.debug("Step 1: Reading content from source")
             content = await self._read_content(request.source)
@@ -88,12 +96,15 @@ class ExtractionEngine:
             layout_fingerprint = self.fingerprint_generator.generate(content)
             logger.debug(f"Generated fingerprint: {layout_fingerprint}")
 
-            # 3. Search library lookup
+            # 3. Search library lookup (decision nº 2: library first, LLM second)
             logger.debug("Step 3: Searching library for matching pattern")
-            pattern = await self.search_library.find_pattern(
-                layout_fingerprint,
-                request.config_id,
-            )
+            use_library = config.behavior.use_search_library if config else True
+            pattern = None
+            if use_library:
+                pattern = await self.search_library.find_pattern(
+                    layout_fingerprint,
+                    request.config_id,
+                )
 
             method_used = "unknown"
             extracted_data = {}
@@ -124,14 +135,19 @@ class ExtractionEngine:
                 extracted_data, confidence = await self._extract_with_llm(
                     content,
                     request.config_id,
-                    request.source,
+                    config,
                 )
                 method_used = "llm"
 
                 # 5. Auto-save pattern if configured
-                if request.options and request.options.get(
-                    "auto_create_patterns", True
-                ):
+                auto_create = (
+                    config.behavior.auto_create_patterns if config else True
+                )
+                if request.options is not None:
+                    auto_create = request.options.get(
+                        "auto_create_patterns", auto_create
+                    )
+                if auto_create:
                     logger.debug("Step 5: Auto-saving pattern")
                     try:
                         new_pattern = self._generate_pattern_from_extraction(
@@ -219,18 +235,40 @@ class ExtractionEngine:
         else:
             raise InvalidConfig(f"Unsupported source type: {source_type}")
 
+    def _load_config(self, config_id: str) -> Optional[ExtractionConfig]:
+        """Load the stored configuration for this extraction, if any.
+
+        Args:
+            config_id: Configuration identifier
+
+        Returns:
+            Optional[ExtractionConfig]: Config or None (unknown id keeps the
+            engine backwards-compatible with ad-hoc extractions)
+        """
+
+        if self.config_store is None:
+            return None
+        try:
+            config = self.config_store.get(config_id)
+        except Exception as e:  # noqa: BLE001 - config errors must not abort
+            logger.warning(f"Could not load config '{config_id}': {e}")
+            return None
+        if config is None:
+            logger.debug(f"No stored config for '{config_id}', using defaults")
+        return config
+
     async def _extract_with_llm(
         self,
         content: str,
         config_id: str,
-        source: Dict[str, Any],
+        config: Optional[ExtractionConfig] = None,
     ) -> tuple[Dict[str, Any], float]:
-        """Extract data using LLM.
+        """Extract data using LLM, honoring the stored configuration.
 
         Args:
             content: Document content
             config_id: Configuration ID
-            source: Source specification
+            config: Stored configuration (instructions, schema, provider)
 
         Returns:
             tuple: (extracted_data dict, confidence score)
@@ -240,16 +278,24 @@ class ExtractionEngine:
         """
 
         try:
-            llm_provider = self.llm_factory.get_default_provider()
+            if config is not None:
+                llm_provider = self.llm_factory.get_provider(
+                    provider_name=config.llm.provider,
+                    model=config.llm.model,
+                )
+                schema = {"fields": config.output.schema or {}}
+                instructions = config.extraction_instructions
+            else:
+                llm_provider = self.llm_factory.get_default_provider()
+                schema = {"fields": {}}
+                instructions = (
+                    f"Extract structured data from this document for config {config_id}"
+                )
 
-            # Basic schema for Phase 1
-            schema = {"fields": {}}
-
-            # Call LLM
             extracted_data = await llm_provider.extract(
                 content=content,
                 schema=schema,
-                instructions=f"Extract structured data from this document for config {config_id}",
+                instructions=instructions,
             )
 
             confidence = 0.90
