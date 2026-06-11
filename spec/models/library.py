@@ -1,7 +1,8 @@
 """Models for search library patterns and pattern fields."""
 
-from typing import List, Optional, Dict, Any
 from datetime import datetime
+from typing import List, Optional
+
 from pydantic import BaseModel, Field
 
 

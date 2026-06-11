@@ -1,7 +1,8 @@
 """Application configuration using Pydantic Settings."""
 
-from typing import Optional
 from pathlib import Path
+from typing import Optional
+
 from pydantic import model_validator
 from pydantic_settings import BaseSettings
 
@@ -35,6 +36,19 @@ class Settings(BaseSettings):
     search_library_path: str = "./data/search_library/patterns.json"
     config_dir: str = "./data/configs"
     uploads_dir: str = "./data/uploads"
+    outputs_dir: str = "./data/outputs"
+    db_path: str = "./data/genie.db"
+
+    master_key: Optional[str] = None  # env: GENIE_MASTER_KEY (base64, 32 bytes)
+    genie_master_key: Optional[str] = None  # alias accepted for convenience
+
+    cors_origins: str = (
+        "http://localhost:8000,http://127.0.0.1:8000,http://localhost:5173"
+    )
+    allowed_fs_roots: Optional[str] = None  # extra roots, separated by os.pathsep
+    max_upload_mb: int = 50
+    max_files_per_upload: int = 20
+    download_link_ttl_seconds: int = 900
 
     anthropic_api_key: Optional[str] = None
     openai_api_key: Optional[str] = None
@@ -43,14 +57,21 @@ class Settings(BaseSettings):
     llm_provider: str = "google"
     llm_model: Optional[str] = None
 
-    model_config = {"env_file": ".env", "env_file_encoding": "utf-8", "case_sensitive": False}
+    model_config = {
+        "env_file": ".env",
+        "env_file_encoding": "utf-8",
+        "case_sensitive": False,
+    }
 
     @model_validator(mode="after")
     def create_directories(self) -> "Settings":
-        """Ensure required directories exist after initialization."""
+        """Ensure required directories exist and normalize aliases."""
+        if self.genie_master_key and not self.master_key:
+            self.master_key = self.genie_master_key
         Path(self.data_dir).mkdir(parents=True, exist_ok=True)
         Path(self.config_dir).mkdir(parents=True, exist_ok=True)
         Path(self.uploads_dir).mkdir(parents=True, exist_ok=True)
+        Path(self.outputs_dir).mkdir(parents=True, exist_ok=True)
         Path(self.search_library_path).parent.mkdir(parents=True, exist_ok=True)
         return self
 

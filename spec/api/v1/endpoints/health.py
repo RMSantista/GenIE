@@ -1,7 +1,6 @@
 """Health check endpoint for API status verification."""
 
 from datetime import datetime
-from typing import Optional
 
 from fastapi import APIRouter, Depends
 

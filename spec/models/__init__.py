@@ -1,14 +1,14 @@
 """Pydantic data models for GENIE framework."""
 
-from spec.models.extraction import ExtractionRequest, ExtractionResponse
 from spec.models.config import (
-    InputConfig,
-    OutputConfig,
-    LLMConfig,
     BehaviorConfig,
     ExtractionConfig,
+    InputConfig,
+    LLMConfig,
+    OutputConfig,
 )
-from spec.models.library import PatternField, SearchPattern, LibraryMetadata
+from spec.models.extraction import ExtractionRequest, ExtractionResponse
+from spec.models.library import LibraryMetadata, PatternField, SearchPattern
 from spec.models.output import FieldDefinition, OutputSchema
 
 __all__ = [

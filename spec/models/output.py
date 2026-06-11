@@ -1,6 +1,7 @@
 """Models for output schema definition and field definitions."""
 
 from typing import Dict, Optional
+
 from pydantic import BaseModel, Field
 
 

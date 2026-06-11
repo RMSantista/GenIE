@@ -1,6 +1,7 @@
 """Configuration models for extraction, input, output, and LLM settings."""
 
-from typing import Any, Dict, Optional
+from typing import Dict, Optional
+
 from pydantic import BaseModel, Field
 
 

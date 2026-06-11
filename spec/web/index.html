@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>GenIE — Generic Extractor of Information Engine</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div id="root">
+    <div class="app">
+      <header class="topbar">
+        <div class="brand">
+          <div class="mark"></div>
+          <span>GenIE</span>
+          <span class="ver">v1.0</span>
+        </div>
+        <div style="width:1px;height:24px;background:var(--line);margin:0 4px"></div>
+        <div class="crumb">Workspace <span data-icon="Chev"></span> <b>Pipeline padrão</b></div>
+        <div class="spacer"></div>
+        <div class="crumb" id="top-key-state"></div>
+      </header>
+
+      <div class="workspace">
+        <!-- LEFT: Configuration -->
+        <div class="pane config">
+          <div class="form">
+
+            <!-- 01 · Model -->
+            <div class="section">
+              <div class="section-head">
+                <div class="num">01</div>
+                <div class="label">Modelo de IA</div>
+                <div class="hint" id="model-note"></div>
+              </div>
+              <div class="model-picker">
+                <div class="composite" style="grid-template-columns:1fr auto">
+                  <select id="model-select" aria-label="Modelo de IA"></select>
+                  <div class="key-state" id="key-state"><span class="dot"></span><span data-icon="Lock"></span><span id="key-state-text">…</span></div>
+                </div>
+                <button class="btn" id="manage-key-btn"></button>
+              </div>
+            </div>
+
+            <!-- 02 · Input -->
+            <div class="section" id="section-input"></div>
+
+            <!-- 03 · Prompt -->
+            <div class="section">
+              <div class="section-head">
+                <div class="num">03</div>
+                <div class="label">O que extrair</div>
+                <div class="hint">localizador</div>
+                <button class="btn ghost" id="example-btn" style="padding:4px 10px;font-size:11px;margin-left:6px" title="Preencher com um exemplo realista"><span data-icon="Spark"></span> Exemplo</button>
+              </div>
+              <textarea class="ctl" id="prompt" rows="4" placeholder="Ex.: Extraia, para cada exame encontrado, os campos: Data, Nome do Exame, Resultado e Valor de Referência."></textarea>
+            </div>
+
+            <!-- 04 · Output -->
+            <div class="section" id="section-output"></div>
+
+            <!-- 05 · Format -->
+            <div class="section">
+              <div class="section-head">
+                <div class="num">05</div>
+                <div class="label">Formato da saída</div>
+                <div class="hint">organizador</div>
+              </div>
+              <textarea class="ctl" id="format" rows="4" placeholder="Ex.: Envie 1 chamada POST por exame com Content-Type: application/json e o body { paciente_id, data, exame, resultado, referencia }."></textarea>
+            </div>
+          </div>
+
+          <div class="action-bar">
+            <div class="summary" id="summary"></div>
+            <span id="action-buttons"></span>
+          </div>
+        </div>
+
+        <!-- RIGHT: Monitor -->
+        <div class="pane monitor" id="monitor"></div>
+      </div>
+    </div>
+    <div id="modal-root"></div>
+  </div>
+  <script src="app.js"></script>
+</body>
+</html>

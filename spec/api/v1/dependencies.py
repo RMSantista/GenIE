@@ -4,7 +4,6 @@ This module provides factory functions for creating and injecting dependencies
 into endpoint handlers using FastAPI's Depends() mechanism.
 """
 
-from typing import Optional
 import logging
 
 from fastapi import Depends
@@ -12,8 +11,8 @@ from fastapi import Depends
 from spec.core.config import Settings, get_settings
 from spec.extraction.engine import ExtractionEngine
 from spec.extraction.llm.factory import LLMProviderFactory
-from spec.search_library.json_storage import JSONStorage
 from spec.output.manager import OutputManager
+from spec.search_library.json_storage import JSONStorage
 
 
 def get_app_settings() -> Settings:

@@ -1,14 +1,16 @@
 """FastAPI application entry point for GENIE framework."""
 
 from contextlib import asynccontextmanager
+from pathlib import Path
 from typing import AsyncGenerator
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 
-from spec.core.config import get_settings
-from spec.core.logging_config import setup_logging, get_logger
 from spec.api.v1.router import router as v1_router
+from spec.core.config import get_settings
+from spec.core.logging_config import get_logger, setup_logging
 
 # Setup logging before anything else
 settings = get_settings()
@@ -48,31 +50,23 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
-# Configure CORS middleware (allow all for development)
+# Configure CORS: explicit origin allowlist (the SPA is served same-origin,
+# so this only matters for external consumers like TabEx during development).
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_origins=[o.strip() for o in settings.cors_origins.split(",") if o.strip()],
+    allow_credentials=False,
+    allow_methods=["GET", "POST", "DELETE"],
+    allow_headers=["Content-Type", "Authorization", "Last-Event-ID"],
 )
 
 # Include API routers
 app.include_router(v1_router, prefix="/api/v1")
 
-
-@app.get("/")
-async def root() -> dict[str, str]:
-    """Root endpoint.
-
-    Returns:
-        dict: Welcome message and API version
-    """
-    return {
-        "message": "GENIE - Generic Extractor of Information Engine",
-        "version": "0.1.0",
-        "docs": "/docs",
-    }
+# Serve the SPA (spec/web) at the root path
+_WEB_DIR = Path(__file__).parent / "web"
+if _WEB_DIR.is_dir():
+    app.mount("/", StaticFiles(directory=_WEB_DIR, html=True), name="web")
 
 
 if __name__ == "__main__":

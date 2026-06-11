@@ -1,7 +1,7 @@
 """Pydantic models for extraction requests and responses."""
 
 from typing import Any, Dict, Optional
-from datetime import datetime
+
 from pydantic import BaseModel, Field
 
 

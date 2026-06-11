@@ -2,8 +2,8 @@
 
 import logging
 import uuid
-from typing import Any, Dict, Optional
 from time import time
+from typing import Any, Dict
 
 from spec.core.exceptions import ExtractionFailed, InvalidConfig
 from spec.extraction.layout.fingerprint import LayoutFingerprint
@@ -111,7 +111,7 @@ class ExtractionEngine:
                     extracted_data, pattern
                 )
                 if is_valid:
-                    logger.info(f"Extraction successful via library")
+                    logger.info("Extraction successful via library")
                 else:
                     logger.warning("Pattern validation failed, falling back to LLM")
                     method_used = "unknown"  # Reset for LLM

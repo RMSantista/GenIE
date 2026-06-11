@@ -1,7 +1,8 @@
 """Document extraction endpoint."""
 
-from fastapi import APIRouter, Depends
 import logging
+
+from fastapi import APIRouter, Depends
 
 from spec.api.v1.dependencies import get_extraction_engine
 from spec.extraction.engine import ExtractionEngine
@@ -51,9 +52,7 @@ async def extract_data(
         }
     """
 
-    logger.info(
-        f"Processing extraction request for config: {request.config_id}"
-    )
+    logger.info(f"Processing extraction request for config: {request.config_id}")
 
     # Call the extraction engine
     response = await engine.extract(request)

@@ -3,7 +3,6 @@
 import hashlib
 import logging
 import re
-from typing import Optional
 
 logger = logging.getLogger(__name__)
 
