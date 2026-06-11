@@ -48,7 +48,9 @@ def get_search_library(settings: Settings = Depends(get_app_settings)) -> JSONSt
     return JSONStorage(storage_path=settings.search_library_path)
 
 
-def get_llm_factory(settings: Settings = Depends(get_app_settings)) -> LLMProviderFactory:
+def get_llm_factory(
+    settings: Settings = Depends(get_app_settings),
+) -> LLMProviderFactory:
     """Get LLM provider factory.
 
     Args:

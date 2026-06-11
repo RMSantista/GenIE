@@ -102,6 +102,7 @@ curl -s -X POST localhost:8000/api/v1/runs -H 'Content-Type: application/json' -
 | Banco de dados | SQLite nativo; Postgres/MySQL via SQLAlchemy opcional | SQLite (cria/evolui tabela) |
 | API REST | GET com Bearer token | POST com Bearer (lote ou por registro) |
 | Upload / Download | multipart seguro | links assinados (15 min) |
+| Texto inline (`text`) | conteúdo enviado no próprio POST — ideal para integração plugin | — |
 
 ## Integração TabEx
 
@@ -137,6 +138,7 @@ pytest --cov=spec           # cobertura
 
 ## Documentação
 
+- **[Manual de uso](./docs/MANUAL.md)** — interface web, API REST (plugin) e integração TabEx
 - [Arquitetura](./docs/guides/GENIE-ARCHITECTURE.md)
 - [Especificação v2](./docs/guides/GENIE-SPEC-v2.md)
 - [Exemplos](./docs/examples/GENIE-EXAMPLES.md)

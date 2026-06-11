@@ -138,9 +138,23 @@ class ConnectorAgent:
             return await self._open_api(spec, emit)
         if spec.type == "db":
             return self._open_db(spec, emit)
+        if spec.type == "text":
+            return self._open_text(spec, emit)
         raise InvalidConfig(f"Tipo de entrada não suportado: {spec.type}")
 
     # ── Inputs ────────────────────────────────────────────────────────────
+
+    def _open_text(self, spec: InputSpec, emit: EmitFn) -> List[Dict[str, Any]]:
+        """Wrap inline text content (sent by integrating apps) as a single item."""
+
+        content = spec.content.strip()
+        if not content:
+            raise InvalidConfig(
+                "Entrada 'text' requer o campo 'content' com o texto a analisar."
+            )
+        name = spec.name.strip() or "conteudo.txt"
+        emit(message=f"Recebido conteúdo inline ({len(content)} caracteres)")
+        return [{"id": "text-1", "name": name, "content": content[:400_000]}]
 
     def _open_upload(self, spec: InputSpec, emit: EmitFn) -> List[Dict[str, Any]]:
         """Read previously uploaded files for this run."""
@@ -480,7 +494,8 @@ class ConnectorAgent:
                         columns.append(key)
             if columns:
                 csv_path = directory / "output.csv"
-                with open(csv_path, "w", encoding="utf-8", newline="") as f:
+                # utf-8-sig (BOM) so Excel pt-BR opens accents correctly.
+                with open(csv_path, "w", encoding="utf-8-sig", newline="") as f:
                     writer = csv.DictWriter(
                         f, fieldnames=columns, extrasaction="ignore"
                     )

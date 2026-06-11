@@ -535,8 +535,10 @@ async function startRun() {
 function subscribe(jobId) {
   const source = new EventSource(`${API}/runs/${jobId}/events`);
   state.eventSource = source;
+  let consecutiveFailures = 0;
 
   source.onmessage = (message) => {
+    consecutiveFailures = 0;
     let event;
     try { event = JSON.parse(message.data); } catch { return; }
     applyEvent(event);
@@ -546,6 +548,7 @@ function subscribe(jobId) {
     // EventSource auto-reconnects with Last-Event-ID; double-check job state.
     try {
       const info = await apiJson(`/runs/${jobId}`);
+      consecutiveFailures = 0;
       if (info.status !== "running" && info.status !== "queued") {
         closeStream();
         state.run.status = info.status;
@@ -553,7 +556,16 @@ function subscribe(jobId) {
         if (info.error) pushLocalLog("sistema", info.error, "error");
         renderActionBar(); renderMonitor();
       }
-    } catch { /* transient; let EventSource retry */ }
+    } catch {
+      // Job gone (e.g. server restarted) or network down: give up after a few tries.
+      consecutiveFailures += 1;
+      if (consecutiveFailures >= 4) {
+        closeStream();
+        state.run.status = "error";
+        pushLocalLog("sistema", "Conexão com o servidor perdida — execução interrompida no monitor.", "error");
+        renderActionBar(); renderMonitor();
+      }
+    }
   };
 }
 

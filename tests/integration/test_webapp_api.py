@@ -206,6 +206,90 @@ class TestRuns:
         tampered = result["downloads"]["json"].replace("sig=", "sig=ff")
         assert (await client.get(tampered)).status_code == 403
 
+    async def test_text_input_rejected_without_content(self, client):
+        get_key_vault().store("google", "AIzaSyFakeKey1234")
+        response = await client.post(
+            "/api/v1/runs",
+            json={
+                "model_id": "gemini-2.5-flash",
+                "input": {"type": "text", "content": "   "},
+                "prompt": "extraia",
+                "output": {"type": "download"},
+            },
+        )
+
+        assert response.status_code == 400
+        assert "content" in response.json()["detail"]
+
+    async def test_text_input_pipeline(self, client, monkeypatch):
+        """Plugin-style integration: inline OCR text in, records out (TabEx case)."""
+
+        get_key_vault().store("google", "AIzaSyFakeKey1234")
+        monkeypatch.setattr(
+            orchestrator_module.Orchestrator,
+            "_resolve_provider",
+            lambda self, model_id: FakeProvider(),
+        )
+
+        created = await client.post(
+            "/api/v1/runs",
+            json={
+                "model_id": "gemini-2.5-flash",
+                "input": {
+                    "type": "text",
+                    "content": "SODIO: 140 mEq/L\nGlicose: 118 mg/dL",
+                    "name": "ocr-sus.txt",
+                },
+                "prompt": "Extraia exame e resultado",
+                "output": {"type": "download"},
+            },
+        )
+        assert created.status_code == 201
+        job_id = created.json()["job_id"]
+
+        for _ in range(50):
+            info = (await client.get(f"/api/v1/runs/{job_id}")).json()
+            if info["status"] in ("done", "error", "cancelled"):
+                break
+            await asyncio.sleep(0.1)
+
+        assert info["status"] == "done", info.get("error")
+        assert info["result"]["records"] == FakeProvider().records
+        assert info["result"]["source"] == {"type": "text", "target": "ocr-sus.txt"}
+
+    async def test_events_have_no_duplicate_seq(self, client, monkeypatch):
+        get_key_vault().store("google", "AIzaSyFakeKey1234")
+        monkeypatch.setattr(
+            orchestrator_module.Orchestrator,
+            "_resolve_provider",
+            lambda self, model_id: FakeProvider(),
+        )
+
+        created = await client.post(
+            "/api/v1/runs",
+            json={
+                "model_id": "gemini-2.5-flash",
+                "input": {"type": "text", "content": "Glicose: 118 mg/dL"},
+                "prompt": "Extraia exame e resultado",
+                "output": {"type": "download"},
+            },
+        )
+        job_id = created.json()["job_id"]
+
+        for _ in range(50):
+            info = (await client.get(f"/api/v1/runs/{job_id}")).json()
+            if info["status"] in ("done", "error", "cancelled"):
+                break
+            await asyncio.sleep(0.1)
+
+        events = await client.get(f"/api/v1/runs/{job_id}/events")
+        seqs = [
+            json.loads(line[len("data: "):])["seq"]
+            for line in events.text.splitlines()
+            if line.startswith("data: ")
+        ]
+        assert seqs == sorted(set(seqs))
+
     async def test_credentials_never_leak_into_events(self, client, monkeypatch):
         get_key_vault().store("google", "AIzaSyFakeKey1234")
         monkeypatch.setattr(

@@ -74,7 +74,9 @@ class ExtractionEngine:
         extraction_id = self._generate_extraction_id()
 
         try:
-            logger.info(f"Starting extraction {extraction_id} with config {request.config_id}")
+            logger.info(
+                f"Starting extraction {extraction_id} with config {request.config_id}"
+            )
 
             # 1. Read content
             logger.debug("Step 1: Reading content from source")
@@ -127,7 +129,9 @@ class ExtractionEngine:
                 method_used = "llm"
 
                 # 5. Auto-save pattern if configured
-                if request.options and request.options.get("auto_create_patterns", True):
+                if request.options and request.options.get(
+                    "auto_create_patterns", True
+                ):
                     logger.debug("Step 5: Auto-saving pattern")
                     try:
                         new_pattern = self._generate_pattern_from_extraction(

@@ -30,6 +30,7 @@ _IN_LABELS = {
     "db": "Banco de dados",
     "api": "API REST",
     "upload": "Upload",
+    "text": "Texto inline",
 }
 _OUT_LABELS = {
     "url": "URL (webhook)",
@@ -46,6 +47,8 @@ def _display_target(spec: InputSpec | OutputSpec) -> str:
     target = re.sub(r"//[^/@]+@", "//••••@", spec.target or "")
     if isinstance(spec, InputSpec) and spec.type == "upload":
         return "arquivos enviados"
+    if isinstance(spec, InputSpec) and spec.type == "text":
+        return spec.name or "texto inline"
     if not target:
         return "saida.json" if getattr(spec, "type", "") == "download" else "—"
     return target

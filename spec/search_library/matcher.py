@@ -63,7 +63,9 @@ class PatternMatcher:
 
             elif extraction_method in ("instruction", "query"):
                 # Phase 2+ features
-                logger.warning(f"Extraction method '{extraction_method}' not yet supported")
+                logger.warning(
+                    f"Extraction method '{extraction_method}' not yet supported"
+                )
                 extracted[field_name] = None
 
             else:

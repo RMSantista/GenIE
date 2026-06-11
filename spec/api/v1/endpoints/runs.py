@@ -73,7 +73,14 @@ async def create_run(request: RunRequest) -> RunCreated:
         raise HTTPException(
             status_code=400, detail="Envie os arquivos antes de executar (upload)."
         )
-    if request.input.type != "upload" and not request.input.target.strip():
+    if request.input.type == "text" and not request.input.content.strip():
+        raise HTTPException(
+            status_code=400, detail="Entrada 'text' requer o campo 'content'."
+        )
+    if (
+        request.input.type not in ("upload", "text")
+        and not request.input.target.strip()
+    ):
         raise HTTPException(
             status_code=400, detail="Informe o endereço da origem dos dados."
         )

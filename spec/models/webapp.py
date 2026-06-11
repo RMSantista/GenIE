@@ -4,7 +4,7 @@ from typing import Any, Dict, List, Literal, Optional
 
 from pydantic import BaseModel, Field
 
-InputType = Literal["url", "path", "db", "api", "upload"]
+InputType = Literal["url", "path", "db", "api", "upload", "text"]
 OutputType = Literal["url", "path", "db", "api", "download"]
 AgentName = Literal["conector", "localizador", "organizador", "sistema"]
 EventType = Literal["progress", "log", "done", "error", "finish"]
@@ -15,13 +15,16 @@ class InputSpec(BaseModel):
     """Source specification for the Connector agent.
 
     Attributes:
-        type: Input kind (url, path, db, api, upload)
+        type: Input kind (url, path, db, api, upload, text)
         target: Address (URL, filesystem path, DB URL, API endpoint)
         user: Username for db connections
         password: Password for db connections (transient, never persisted)
         token: Bearer token for api connections (transient, never persisted)
         query: Optional SQL query for db inputs
         upload_id: Upload batch id for upload inputs
+        content: Inline text content for text inputs (plugin-friendly:
+            other apps can send pre-extracted/OCR text in a single POST)
+        name: Optional display name for text inputs
     """
 
     type: InputType
@@ -31,6 +34,8 @@ class InputSpec(BaseModel):
     token: str = ""
     query: str = ""
     upload_id: Optional[str] = None
+    content: str = ""
+    name: str = ""
 
 
 class OutputSpec(BaseModel):

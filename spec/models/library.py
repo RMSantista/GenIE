@@ -51,6 +51,7 @@ class SearchPattern(BaseModel):
 
     class Config:
         """Pydantic configuration."""
+
         json_schema_extra = {
             "example": {
                 "layout_id": "layout_abc123",
@@ -66,9 +67,9 @@ class SearchPattern(BaseModel):
                         "extraction_method": "regex",
                         "pattern": r"Patient:\s*([^\n]+)",
                         "validation": r".{2,}",
-                        "post_process": None
+                        "post_process": None,
                     }
-                ]
+                ],
             }
         }
 

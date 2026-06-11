@@ -78,8 +78,12 @@ class JobManager:
         self._jobs[job.id] = job
 
         while len(self._jobs) > self._max_jobs:
-            oldest_id = next(iter(self._jobs))
-            evicted = self._jobs.pop(oldest_id)
+            # Prefer evicting finished jobs; fall back to the oldest one.
+            evict_id = next(
+                (jid for jid, j in self._jobs.items() if j.is_finished),
+                next(iter(self._jobs)),
+            )
+            evicted = self._jobs.pop(evict_id)
             if evicted.task and not evicted.task.done():
                 evicted.task.cancel()
 
@@ -165,17 +169,23 @@ class JobManager:
         job._subscribers.append(queue)
 
         try:
-            replay_from = last_event_id or 0
+            # Events emitted while we replay history also land in the queue;
+            # track the highest seq yielded so far to skip those duplicates.
+            last_seq = last_event_id or 0
             for event in list(job.events):
-                if event.seq > replay_from:
+                if event.seq > last_seq:
                     yield event
+                    last_seq = event.seq
 
             if job.is_finished:
                 return
 
             while True:
                 event = await queue.get()
+                if event.seq <= last_seq:
+                    continue
                 yield event
+                last_seq = event.seq
                 if event.type in ("finish", "error") and event.status in _TERMINAL:
                     return
         finally:

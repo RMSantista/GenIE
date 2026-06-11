@@ -1,5 +1,7 @@
 """FastAPI application entry point for GENIE framework."""
 
+import shutil
+import time
 from contextlib import asynccontextmanager
 from pathlib import Path
 from typing import AsyncGenerator
@@ -16,6 +18,26 @@ from spec.core.logging_config import get_logger, setup_logging
 settings = get_settings()
 logger_instance = setup_logging(settings.log_level)
 logger = get_logger(__name__)
+
+
+def _cleanup_stale_dirs(root: Path, max_age_hours: int) -> None:
+    """Remove stale upload/output batch directories left by old runs.
+
+    Args:
+        root: Directory containing per-batch subdirectories
+        max_age_hours: Age threshold for removal
+    """
+
+    if not root.is_dir():
+        return
+    cutoff = time.time() - max_age_hours * 3600
+    for batch_dir in root.iterdir():
+        try:
+            if batch_dir.is_dir() and batch_dir.stat().st_mtime < cutoff:
+                shutil.rmtree(batch_dir, ignore_errors=True)
+                logger.debug(f"Removed stale directory: {batch_dir}")
+        except OSError:  # pragma: no cover - best-effort housekeeping
+            continue
 
 
 @asynccontextmanager
@@ -35,6 +57,8 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     logger.info(f"Starting GENIE API in {settings.environment} mode")
     logger.debug(f"Log level: {settings.log_level}")
     logger.debug(f"API: {settings.api_host}:{settings.api_port}")
+    _cleanup_stale_dirs(Path(settings.uploads_dir), max_age_hours=24)
+    _cleanup_stale_dirs(Path(settings.outputs_dir), max_age_hours=24)
 
     yield
 
@@ -46,7 +70,7 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
 app = FastAPI(
     title="GENIE - Generic Extractor of Information Engine",
     description="LLM-powered data extraction framework",
-    version="0.1.0",
+    version="1.0.0",
     lifespan=lifespan,
 )
 

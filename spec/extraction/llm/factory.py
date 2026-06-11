@@ -69,7 +69,9 @@ class LLMProviderFactory:
         resolved_key = api_key or self._get_api_key_for_provider(provider_name)
 
         if not resolved_key:
-            raise InvalidConfig(f"API key for provider '{provider_name}' is not configured")
+            raise InvalidConfig(
+                f"API key for provider '{provider_name}' is not configured"
+            )
 
         # Never put key material (even a prefix) in cache keys: hash it.
         key_digest = hashlib.sha256(resolved_key.encode("utf-8")).hexdigest()[:16]
@@ -134,7 +136,9 @@ class LLMProviderFactory:
 
         self._providers.clear()
 
-        logger.info(f"Provider configured: {provider}, model: {model or _DEFAULT_MODELS[provider]}")
+        logger.info(
+            f"Provider configured: {provider}, model: {model or _DEFAULT_MODELS[provider]}"
+        )
 
     @staticmethod
     def list_providers() -> list[dict]:

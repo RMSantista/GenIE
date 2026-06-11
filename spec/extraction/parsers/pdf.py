@@ -42,7 +42,9 @@ class PDFParser:
         source_type = source.get("type", "").lower()
 
         if source_type not in ("file", "pdf"):
-            raise InvalidConfig(f"PDFParser does not support source type: {source_type}")
+            raise InvalidConfig(
+                f"PDFParser does not support source type: {source_type}"
+            )
 
         path = source.get("path")
         if not path:
@@ -70,9 +72,9 @@ class PDFParser:
                         page_text = ""
 
                     # Check if page has enough text (not scanned)
-                    if (
-                        detect_scanned
-                        and (not page_text or len(page_text) < PDFParser.SCANNED_PDF_THRESHOLD)
+                    if detect_scanned and (
+                        not page_text
+                        or len(page_text) < PDFParser.SCANNED_PDF_THRESHOLD
                     ):
                         raise ExtractionFailed(
                             f"PDF appears to be scanned (no text on page {page_num}). "

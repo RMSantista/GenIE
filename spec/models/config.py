@@ -94,6 +94,7 @@ class ExtractionConfig(BaseModel):
 
     class Config:
         """Pydantic configuration."""
+
         json_schema_extra = {
             "example": {
                 "extraction_id": "config_001",
@@ -101,25 +102,25 @@ class ExtractionConfig(BaseModel):
                 "input": {
                     "type": "pdf",
                     "source": "/uploads/reports",
-                    "access_mode": "local_secure"
+                    "access_mode": "local_secure",
                 },
                 "output": {
                     "type": "json",
                     "destination": "/outputs",
-                    "auto_adapt": True
+                    "auto_adapt": True,
                 },
                 "llm": {
                     "provider": "anthropic",
                     "model": "claude-sonnet-4-20250514",
                     "temperature": 0.0,
-                    "max_tokens": 4096
+                    "max_tokens": 4096,
                 },
                 "behavior": {
                     "use_search_library": True,
                     "auto_create_patterns": True,
                     "layout_independent": True,
-                    "update_on_change": True
+                    "update_on_change": True,
                 },
-                "extraction_instructions": "Extract patient name, age, and test results."
+                "extraction_instructions": "Extract patient name, age, and test results.",
             }
         }
