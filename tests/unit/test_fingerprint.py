@@ -1,6 +1,5 @@
 """Tests for layout fingerprinting."""
 
-import pytest
 
 from spec.extraction.layout.fingerprint import LayoutFingerprint
 

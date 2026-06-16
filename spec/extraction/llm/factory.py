@@ -1,21 +1,22 @@
 """Factory for creating LLM provider instances."""
 
+import hashlib
 import logging
 from typing import Optional
 
 from spec.core.config import Settings, get_settings
 from spec.core.exceptions import InvalidConfig
-from spec.extraction.llm.base import BaseLLMProvider
 from spec.extraction.llm.anthropic import AnthropicProvider
+from spec.extraction.llm.base import BaseLLMProvider
 from spec.extraction.llm.google import GoogleProvider
 from spec.extraction.llm.openai import OpenAIProvider
 
 logger = logging.getLogger(__name__)
 
 _DEFAULT_MODELS: dict[str, str] = {
-    "google": "gemini-1.5-pro",
+    "google": "gemini-2.5-flash",
     "openai": "gpt-4o",
-    "anthropic": "claude-sonnet-4-20250514",
+    "anthropic": "claude-sonnet-4-6",
 }
 
 _SUPPORTED_PROVIDERS = frozenset(_DEFAULT_MODELS.keys())
@@ -68,9 +69,13 @@ class LLMProviderFactory:
         resolved_key = api_key or self._get_api_key_for_provider(provider_name)
 
         if not resolved_key:
-            raise InvalidConfig(f"API key for provider '{provider_name}' is not configured")
+            raise InvalidConfig(
+                f"API key for provider '{provider_name}' is not configured"
+            )
 
-        cache_key = f"{provider_name}:{resolved_model}:{resolved_key[:10]}"
+        # Never put key material (even a prefix) in cache keys: hash it.
+        key_digest = hashlib.sha256(resolved_key.encode("utf-8")).hexdigest()[:16]
+        cache_key = f"{provider_name}:{resolved_model}:{key_digest}"
 
         if cache_key in self._providers:
             return self._providers[cache_key]
@@ -121,19 +126,19 @@ class LLMProviderFactory:
         if provider not in _SUPPORTED_PROVIDERS:
             raise InvalidConfig(f"Unknown LLM provider: {provider}")
 
-        if provider == "google":
-            self.settings.google_api_key = api_key
-        elif provider == "openai":
-            self.settings.openai_api_key = api_key
-        elif provider == "anthropic":
-            self.settings.anthropic_api_key = api_key
+        # Persist encrypted (AES-256-GCM) instead of keeping plaintext in settings.
+        from spec.core.security import get_key_vault
+
+        get_key_vault().store(provider, api_key)
 
         self.settings.llm_provider = provider
         self.settings.llm_model = model
 
         self._providers.clear()
 
-        logger.info(f"Provider configured: {provider}, model: {model or _DEFAULT_MODELS[provider]}")
+        logger.info(
+            f"Provider configured: {provider}, model: {model or _DEFAULT_MODELS[provider]}"
+        )
 
     @staticmethod
     def list_providers() -> list[dict]:
@@ -147,29 +152,28 @@ class LLMProviderFactory:
             {
                 "name": "google",
                 "display_name": "Google Gemini",
-                "default_model": "gemini-1.5-pro",
-                "available_models": ["gemini-1.5-pro", "gemini-1.5-flash", "gemini-2.0-flash"],
+                "default_model": "gemini-2.5-flash",
+                "available_models": ["gemini-2.5-flash", "gemini-2.5-pro"],
             },
             {
                 "name": "openai",
                 "display_name": "OpenAI GPT",
                 "default_model": "gpt-4o",
-                "available_models": ["gpt-4o", "gpt-4o-mini", "gpt-4-turbo"],
+                "available_models": ["gpt-4o", "gpt-4o-mini"],
             },
             {
                 "name": "anthropic",
                 "display_name": "Anthropic Claude",
-                "default_model": "claude-sonnet-4-20250514",
+                "default_model": "claude-sonnet-4-6",
                 "available_models": [
-                    "claude-sonnet-4-20250514",
-                    "claude-3-5-haiku-20241022",
-                    "claude-opus-4-5",
+                    "claude-sonnet-4-6",
+                    "claude-haiku-4-5-20251001",
                 ],
             },
         ]
 
     def _get_api_key_for_provider(self, provider_name: str) -> Optional[str]:
-        """Resolve API key from settings for the given provider.
+        """Resolve API key: encrypted vault first, env settings as fallback.
 
         Args:
             provider_name: Provider name
@@ -177,6 +181,13 @@ class LLMProviderFactory:
         Returns:
             Optional[str]: API key or None if not configured
         """
+
+        # Lazy import to avoid a circular dependency at module load time.
+        from spec.core.security import get_key_vault
+
+        vault_key = get_key_vault().get_plaintext(provider_name)
+        if vault_key:
+            return vault_key
 
         key_map: dict[str, Optional[str]] = {
             "google": self.settings.google_api_key,

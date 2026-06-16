@@ -1,12 +1,12 @@
 """Pytest configuration and fixtures for GENIE tests."""
 
-import pytest
 import asyncio
-from pathlib import Path
+
+import pytest
 from fastapi.testclient import TestClient
 
-from spec.main import app
 from spec.core.config import Settings
+from spec.main import app
 
 
 @pytest.fixture(scope="session")

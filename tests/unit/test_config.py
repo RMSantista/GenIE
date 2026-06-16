@@ -1,6 +1,5 @@
 """Tests for configuration management."""
 
-import pytest
 from pathlib import Path
 
 from spec.core.config import Settings, get_settings

@@ -32,8 +32,8 @@ class GoogleProvider(BaseLLMProvider):
     def __init__(
         self,
         api_key: str,
-        model: str = "gemini-1.5-pro",
-        max_tokens: int = 4096,
+        model: str = "gemini-2.5-flash",
+        max_tokens: int = 16384,
         temperature: float = 0.0,
     ) -> None:
         """Initialize Google Gemini provider.
@@ -55,10 +55,13 @@ class GoogleProvider(BaseLLMProvider):
         self.max_tokens = max_tokens
         self.temperature = temperature
         self.client = genai.Client(api_key=api_key)
+        # response_mime_type forces native JSON mode; the generous token limit
+        # accounts for Gemini 2.5 "thinking" tokens that also consume output.
         self._generate_config = types.GenerateContentConfig(
             system_instruction=_SYSTEM_INSTRUCTION,
             temperature=temperature,
             max_output_tokens=max_tokens,
+            response_mime_type="application/json",
         )
 
     async def extract(

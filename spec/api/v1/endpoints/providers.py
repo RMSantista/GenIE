@@ -8,7 +8,11 @@ from fastapi import APIRouter, Depends, HTTPException
 from spec.api.v1.dependencies import get_llm_factory
 from spec.core.exceptions import InvalidConfig, LLMProviderError
 from spec.extraction.llm.factory import LLMProviderFactory
-from spec.models.provider import ProviderConfigRequest, ProviderConfigResponse, ProviderInfo
+from spec.models.provider import (
+    ProviderConfigRequest,
+    ProviderConfigResponse,
+    ProviderInfo,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -139,7 +143,9 @@ async def configure_provider(
             detail=f"API key validation failed for '{request.provider}': {e}",
         )
     except Exception as e:
-        logger.error(f"Unexpected error validating {request.provider}: {e}", exc_info=True)
+        logger.error(
+            f"Unexpected error validating {request.provider}: {e}", exc_info=True
+        )
         raise HTTPException(
             status_code=400,
             detail=f"Could not validate API key for '{request.provider}': {e}",
@@ -155,7 +161,9 @@ async def configure_provider(
     meta = next(m for m in provider_metadata if m["name"] == request.provider)
     active_model = request.model or meta["default_model"]
 
-    logger.info(f"Provider configured successfully: {request.provider} / {active_model}")
+    logger.info(
+        f"Provider configured successfully: {request.provider} / {active_model}"
+    )
 
     return ProviderConfigResponse(
         success=True,

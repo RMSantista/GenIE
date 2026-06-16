@@ -2,15 +2,15 @@
 
 from spec.core.config import Settings, get_settings
 from spec.core.exceptions import (
-    GenieException,
-    LayoutNotRecognized,
     ExtractionFailed,
-    LLMProviderError,
+    GenieException,
     InvalidConfig,
+    LayoutNotRecognized,
+    LLMProviderError,
     StorageError,
 )
-from spec.core.logging_config import setup_logging, get_logger
-from spec.core.security import SecureKeyStore
+from spec.core.logging_config import get_logger, setup_logging
+from spec.core.security import KeyVault, SecretCipher, get_cipher, get_key_vault
 
 __all__ = [
     "Settings",
@@ -23,5 +23,8 @@ __all__ = [
     "StorageError",
     "setup_logging",
     "get_logger",
-    "SecureKeyStore",
+    "KeyVault",
+    "SecretCipher",
+    "get_cipher",
+    "get_key_vault",
 ]

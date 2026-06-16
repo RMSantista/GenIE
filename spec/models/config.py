@@ -1,6 +1,7 @@
 """Configuration models for extraction, input, output, and LLM settings."""
 
-from typing import Any, Dict, Optional
+from typing import Dict, Optional
+
 from pydantic import BaseModel, Field
 
 
@@ -47,7 +48,7 @@ class LLMConfig(BaseModel):
     """
 
     provider: str = Field("anthropic", description="LLM provider")
-    model: str = Field("claude-sonnet-4-20250514", description="Model ID")
+    model: str = Field("claude-sonnet-4-6", description="Model ID")
     api_key_ref: Optional[str] = Field(None, description="API key reference")
     fallback_to_ocr: bool = Field(False, description="Fallback to OCR")
     temperature: float = Field(0.0, ge=0.0, le=1.0, description="Temperature")
@@ -93,6 +94,7 @@ class ExtractionConfig(BaseModel):
 
     class Config:
         """Pydantic configuration."""
+
         json_schema_extra = {
             "example": {
                 "extraction_id": "config_001",
@@ -100,25 +102,25 @@ class ExtractionConfig(BaseModel):
                 "input": {
                     "type": "pdf",
                     "source": "/uploads/reports",
-                    "access_mode": "local_secure"
+                    "access_mode": "local_secure",
                 },
                 "output": {
                     "type": "json",
                     "destination": "/outputs",
-                    "auto_adapt": True
+                    "auto_adapt": True,
                 },
                 "llm": {
                     "provider": "anthropic",
-                    "model": "claude-sonnet-4-20250514",
+                    "model": "claude-sonnet-4-6",
                     "temperature": 0.0,
-                    "max_tokens": 4096
+                    "max_tokens": 4096,
                 },
                 "behavior": {
                     "use_search_library": True,
                     "auto_create_patterns": True,
                     "layout_independent": True,
-                    "update_on_change": True
+                    "update_on_change": True,
                 },
-                "extraction_instructions": "Extract patient name, age, and test results."
+                "extraction_instructions": "Extract patient name, age, and test results.",
             }
         }

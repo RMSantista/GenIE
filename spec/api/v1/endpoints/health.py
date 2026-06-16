@@ -1,7 +1,6 @@
 """Health check endpoint for API status verification."""
 
-from datetime import datetime
-from typing import Optional
+from datetime import datetime, timezone
 
 from fastapi import APIRouter, Depends
 
@@ -11,20 +10,7 @@ from spec.core.config import Settings
 router = APIRouter()
 
 
-class HealthResponse(dict):
-    """Health check response model.
-
-    Attributes:
-        status: Health status ("healthy" or "unhealthy")
-        timestamp: Check timestamp
-        version: API version
-        environment: Current environment
-    """
-
-    pass
-
-
-@router.get("/health", response_model=dict[str, str | datetime])
+@router.get("/health")
 async def health_check(settings: Settings = Depends(get_app_settings)) -> dict:
     """Health check endpoint.
 
@@ -34,21 +20,21 @@ async def health_check(settings: Settings = Depends(get_app_settings)) -> dict:
         settings: Application settings (injected via Depends)
 
     Returns:
-        dict: Health status information including timestamp, version, and environment
+        dict: Health status with timestamp, version and environment
 
     Example:
         GET /api/v1/health
         Response: {
             "status": "healthy",
-            "version": "0.1.0",
-            "timestamp": "2026-03-05T10:30:45.123456",
+            "version": "1.0.0",
+            "timestamp": "2026-06-11T10:30:45.123456+00:00",
             "environment": "development"
         }
     """
 
     return {
         "status": "healthy",
-        "version": "0.1.0",
-        "timestamp": datetime.utcnow().isoformat(),
+        "version": "1.0.0",
+        "timestamp": datetime.now(timezone.utc).isoformat(),
         "environment": settings.environment,
     }

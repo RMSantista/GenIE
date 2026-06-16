@@ -32,7 +32,7 @@ class OpenAIProvider(BaseLLMProvider):
         self,
         api_key: str,
         model: str = "gpt-4o",
-        max_tokens: int = 4096,
+        max_tokens: int = 8192,
         temperature: float = 0.0,
     ) -> None:
         """Initialize OpenAI provider.
@@ -84,6 +84,7 @@ class OpenAIProvider(BaseLLMProvider):
                 model=self.model,
                 max_tokens=self.max_tokens,
                 temperature=self.temperature,
+                response_format={"type": "json_object"},
                 messages=[
                     {"role": "system", "content": _SYSTEM_MESSAGE},
                     {"role": "user", "content": prompt},

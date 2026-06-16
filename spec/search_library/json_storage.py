@@ -24,7 +24,9 @@ class JSONStorage(BaseStorage):
     - Pattern success rate tracking
     """
 
-    def __init__(self, storage_path: str = "./data/search_library/patterns.json") -> None:
+    def __init__(
+        self, storage_path: str = "./data/search_library/patterns.json"
+    ) -> None:
         """Initialize JSON storage.
 
         Args:
@@ -178,9 +180,7 @@ class JSONStorage(BaseStorage):
 
                 # Add to storage
                 self._cache["patterns"].append(new_pattern)
-                self._cache["metadata"]["total_patterns"] = len(
-                    self._cache["patterns"]
-                )
+                self._cache["metadata"]["total_patterns"] = len(self._cache["patterns"])
                 self._cache["metadata"]["last_updated"] = now
 
                 # Persist
@@ -221,9 +221,9 @@ class JSONStorage(BaseStorage):
                     new_rate = (old_rate * (use_count - 1) + success_value) / use_count
                     pattern["success_rate"] = round(new_rate, 3)
 
-                    self._cache["metadata"]["last_updated"] = (
-                        datetime.utcnow().isoformat()
-                    )
+                    self._cache["metadata"][
+                        "last_updated"
+                    ] = datetime.utcnow().isoformat()
 
                     self._save_storage(self._cache)
 

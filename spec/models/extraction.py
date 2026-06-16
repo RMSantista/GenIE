@@ -1,7 +1,7 @@
 """Pydantic models for extraction requests and responses."""
 
 from typing import Any, Dict, Optional
-from datetime import datetime
+
 from pydantic import BaseModel, Field
 
 
@@ -46,6 +46,7 @@ class ExtractionResponse(BaseModel):
 
     class Config:
         """Pydantic configuration."""
+
         json_schema_extra = {
             "example": {
                 "extraction_id": "ext_123456",
@@ -55,6 +56,6 @@ class ExtractionResponse(BaseModel):
                 "confidence": 0.95,
                 "processing_time_ms": 1250,
                 "layout_fingerprint": "a1b2c3d4e5f6g7h8",
-                "error": None
+                "error": None,
             }
         }

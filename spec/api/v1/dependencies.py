@@ -4,16 +4,16 @@ This module provides factory functions for creating and injecting dependencies
 into endpoint handlers using FastAPI's Depends() mechanism.
 """
 
-from typing import Optional
 import logging
 
 from fastapi import Depends
 
 from spec.core.config import Settings, get_settings
+from spec.core.config_store import ConfigStore
 from spec.extraction.engine import ExtractionEngine
 from spec.extraction.llm.factory import LLMProviderFactory
-from spec.search_library.json_storage import JSONStorage
 from spec.output.manager import OutputManager
+from spec.search_library.json_storage import JSONStorage
 
 
 def get_app_settings() -> Settings:
@@ -49,7 +49,9 @@ def get_search_library(settings: Settings = Depends(get_app_settings)) -> JSONSt
     return JSONStorage(storage_path=settings.search_library_path)
 
 
-def get_llm_factory(settings: Settings = Depends(get_app_settings)) -> LLMProviderFactory:
+def get_llm_factory(
+    settings: Settings = Depends(get_app_settings),
+) -> LLMProviderFactory:
     """Get LLM provider factory.
 
     Args:
@@ -70,10 +72,23 @@ def get_output_manager() -> OutputManager:
     return OutputManager()
 
 
+def get_config_store(settings: Settings = Depends(get_app_settings)) -> ConfigStore:
+    """Get extraction configuration store.
+
+    Args:
+        settings: Application settings (injected)
+
+    Returns:
+        ConfigStore: File-backed configuration store
+    """
+    return ConfigStore(config_dir=settings.config_dir)
+
+
 def get_extraction_engine(
     search_library: JSONStorage = Depends(get_search_library),
     llm_factory: LLMProviderFactory = Depends(get_llm_factory),
     output_manager: OutputManager = Depends(get_output_manager),
+    config_store: ConfigStore = Depends(get_config_store),
 ) -> ExtractionEngine:
     """Get extraction engine instance.
 
@@ -91,4 +106,5 @@ def get_extraction_engine(
         search_library=search_library,
         llm_factory=llm_factory,
         output_manager=output_manager,
+        config_store=config_store,
     )

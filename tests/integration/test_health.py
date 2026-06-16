@@ -1,7 +1,7 @@
 """Tests for health check endpoint."""
 
-import pytest
 import httpx
+import pytest
 
 from spec.main import app
 
@@ -14,15 +14,13 @@ async def client():
         yield c
 
 
-async def test_root_endpoint(client: httpx.AsyncClient):
-    """Test root endpoint."""
+async def test_root_serves_spa(client: httpx.AsyncClient):
+    """Root endpoint serves the GenIE single-page application."""
     response = await client.get("/")
 
     assert response.status_code == 200
-    data = response.json()
-    assert "message" in data
-    assert "version" in data
-    assert data["version"] == "0.1.0"
+    assert "text/html" in response.headers["content-type"]
+    assert "GenIE" in response.text
 
 
 async def test_health_endpoint(client: httpx.AsyncClient):

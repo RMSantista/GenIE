@@ -1,6 +1,7 @@
 """Models for output schema definition and field definitions."""
 
 from typing import Dict, Optional
+
 from pydantic import BaseModel, Field
 
 
@@ -31,30 +32,27 @@ class OutputSchema(BaseModel):
 
     class Config:
         """Pydantic configuration."""
+
         json_schema_extra = {
             "example": {
                 "fields": {
                     "patient_id": {
                         "name": "patient_id",
                         "type": "string",
-                        "required": True
+                        "required": True,
                     },
                     "patient_name": {
                         "name": "patient_name",
                         "type": "string",
-                        "required": True
+                        "required": True,
                     },
                     "exam_date": {
                         "name": "exam_date",
                         "type": "date",
-                        "required": True
+                        "required": True,
                     },
-                    "result": {
-                        "name": "result",
-                        "type": "string",
-                        "required": False
-                    }
+                    "result": {"name": "result", "type": "string", "required": False},
                 },
-                "primary_key": "patient_id"
+                "primary_key": "patient_id",
             }
         }

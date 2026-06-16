@@ -132,7 +132,7 @@ dmypy.json
 
 # Project-specific
 logs/
-data/uploads/*
-data/search_library/patterns.json
-data/search_library/patterns.db
+# Runtime data: NEVER commit (contains master key and encrypted secrets)
+data/
+
 *.db
